@@ -1,11 +1,8 @@
 package com.approvers.devlazaApi.controller
 
+import com.approvers.devlazaApi.model.*
 import com.approvers.devlazaApi.repository.ProjectsRepository
 import com.approvers.devlazaApi.repository.SitesRepository
-import com.approvers.devlazaApi.model.ProjectPoster
-import com.approvers.devlazaApi.model.Projects
-import com.approvers.devlazaApi.model.Sites
-import com.approvers.devlazaApi.model.SitesPoster
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.lang.IllegalArgumentException
@@ -37,11 +34,78 @@ class ProjectsController(private val projectsRepository: ProjectsRepository, pri
         return projects
     }
 
+    @GetMapping("/condition")
+    fun searchWithConditions(
+            @RequestParam(name="keyword", defaultValue="#{null}") keyword: String?,
+            @RequestParam(name="count", defaultValue="100") rawCount: Int?,
+            @RequestParam(name="user", defaultValue="#{null}") user:String?,
+            @RequestParam(name="tags", defaultValue="#{null}") rawTags: String?,
+            @RequestParam(name="sort", defaultValue="asc") sortOrder: String,
+            @RequestParam(name="recruiting", defaultValue="1") rawRecruiting: String?
+
+    ): ResponseEntity<MutableList<Projects>>{
+        val recruiting: Int = if(rawRecruiting is String && rawRecruiting.toIntOrNull() != null) {
+            rawRecruiting.toInt()
+        }else{
+            1
+        }
+        var projectsList: MutableList<Projects> = projectsRepository.findAll()
+        if (keyword is String){
+            projectsList = searchWithKeyWord(projectsList, keyword)
+        }
+        if (user is String){
+            projectsList = searchWithUser(projectsList, user)
+        }
+        if (rawTags is String) {
+            rawTags.split("+")
+        }
+        println(projectsList)
+        projectsList = filterWithRecruiting(projectsList, recruiting)
+        println(projectsList)
+        when(sortOrder){
+            "asc" -> projectsList.sortBy{it.created_at}
+            "desc" -> {
+                projectsList.sortBy{it.created_at}
+                projectsList.reverse()
+            }
+        }
+        println(projectsList)
+        if (projectsList.size == 0) return ResponseEntity.notFound().build()
+        return ResponseEntity.ok(projectsList)
+    }
+
+    fun searchWithUser(projectsList: MutableList<Projects>, userID: String): MutableList<Projects>{
+        val results: MutableList<Projects> = mutableListOf()
+        for (projects in projectsList){
+            if (userID == projects.createdUserId) results.add(projects)
+        }
+        return results
+    }
+
+    fun searchWithKeyWord(projectsList: MutableList<Projects>, keyword: String): MutableList<Projects>{
+        val results: MutableList<Projects> = mutableListOf()
+        val regex = Regex(keyword)
+        for (projects in projectsList){
+            if (regex.containsMatchIn(projects.name)) results.add(projects)
+        }
+        return results
+    }
+
+    fun filterWithRecruiting(projectsList: MutableList<Projects>, recruiting: Int): MutableList<Projects>{
+        val results: MutableList<Projects> = mutableListOf()
+        for (projects in projectsList){
+            print(projects.recruiting)
+            println(recruiting)
+            if (projects.recruiting == recruiting) results.add(projects)
+        }
+        return results
+    }
+
     @GetMapping("/{id}")
     fun getProjectById(@PathVariable(value="id") rawId: String?): ResponseEntity<Projects>{
         val projectId: UUID
         try{
-            projectId = UUID.fromString(rawId)
+           projectId = UUID.fromString(rawId)
         }catch (e: IllegalArgumentException){
             return ResponseEntity.badRequest().build()
         }
