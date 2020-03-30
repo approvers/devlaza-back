@@ -8,6 +8,8 @@ import com.approvers.devlazaApi.model.Sites
 import com.approvers.devlazaApi.model.SitesPoster
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import java.lang.IllegalArgumentException
+import java.util.*
 import javax.validation.Valid
 
 @RestController
@@ -36,10 +38,25 @@ class ProjectsController(private val projectsRepository: ProjectsRepository, pri
     }
 
     @GetMapping("/{id}")
-    fun getProjectById(@PathVariable(value="id") projectId: String): ResponseEntity<Projects>{
-        return projectsRepository.findById(projectId).map{ project ->
-            ResponseEntity.ok(project)
-        }.orElse(ResponseEntity.notFound().build())
+    fun getProjectById(@PathVariable(value="id") rawId: String?): ResponseEntity<Projects>{
+        val projectId: UUID
+        try{
+            projectId = UUID.fromString(rawId)
+        }catch (e: IllegalArgumentException){
+            return ResponseEntity.badRequest().build()
+        }
+        val projects: Projects? =  findByID(projectId)
+        if (projects is Projects) return ResponseEntity.ok(projects)
+
+        return ResponseEntity.notFound().build()
+    }
+
+    fun findByID(projectId: UUID): Projects?{
+        val projectsList: List<Projects> = projectsRepository.findAll()
+        for(project in projectsList){
+            if (project.id == projectId) return project
+        }
+        return null
     }
 }
 
@@ -60,26 +77,27 @@ class SitesController(private val sitesRepository: SitesRepository){
     }
 
     @GetMapping("/{project_id}")
-    fun searchFromProjectId(@PathVariable(value="project_id") rawId: Long?): ResponseEntity<List<Sites>>{
-        val projectId: Long
-        if (rawId is Long){
-            projectId = rawId.toLong()
+    fun searchFromProjectId(@PathVariable(value="project_id") rawId: String?): ResponseEntity<List<Sites>>{
+        val projectId: UUID
+        try {
+            projectId = UUID.fromString(rawId)
+        }catch (e: IllegalArgumentException){
+            return ResponseEntity.badRequest().build()
         }
-        else{
-            return ResponseEntity.notFound().build()
-        }
+        val sitesList = findByID(projectId)
+        if (sitesList.size != 0) return ResponseEntity.ok(sitesList.toList())
+        return ResponseEntity.notFound().build()
+    }
+
+    fun findByID(projectId: UUID): MutableList<Sites>{
         val sitesList: MutableList<Sites> = mutableListOf()
-        val getSites: List<Sites?> = sitesRepository.findAll()
+        val getSites: List<Sites> = sitesRepository.findAll()
         for (sites in getSites){
-            if (sites == null){
-                continue
-            }
             if (sites.projectId == projectId){
                 print(sites.id)
                 sitesList.add(sites)
             }
         }
-        if (sitesList.size != 0) return ResponseEntity.ok(sitesList.toList())
-        return ResponseEntity.notFound().build()
+        return sitesList
     }
 }
