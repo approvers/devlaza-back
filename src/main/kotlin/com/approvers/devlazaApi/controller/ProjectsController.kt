@@ -34,6 +34,7 @@ class ProjectsController(private val projectsRepository: ProjectsRepository, pri
         return projects
     }
 
+    // TODO: tag検索と時間での絞り込みの実装、countによるコンテンツ数の制限
     @GetMapping("/condition")
     fun searchWithConditions(
             @RequestParam(name="keyword", defaultValue="#{null}") keyword: String?,
@@ -121,6 +122,22 @@ class ProjectsController(private val projectsRepository: ProjectsRepository, pri
             if (project.id == projectId) return project
         }
         return null
+    }
+
+    @DeleteMapping("/{id}")
+    fun deleteProject(@PathVariable(value="id") rawId: String?, @RequestParam(name="user", required=true) user: String): ResponseEntity<String>{
+        val projectId: UUID
+        try{
+            projectId = UUID.fromString(rawId)
+        }catch (e: IllegalArgumentException){
+            return ResponseEntity.badRequest().build()
+        }
+        val project: Projects = findByID(projectId) ?: return ResponseEntity.badRequest().build()
+        if (project.createdUserId == user){
+            projectsRepository.delete(project)
+            return ResponseEntity.ok("Deleted")
+        }
+        return ResponseEntity.badRequest().build()
     }
 }
 
