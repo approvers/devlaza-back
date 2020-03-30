@@ -34,7 +34,7 @@ class ProjectsController(private val projectsRepository: ProjectsRepository, pri
         return projects
     }
 
-    // TODO: tag検索と時間での絞り込みの実装、countによるコンテンツ数の制限
+    // TODO: tag検索と時間での絞り込みの実装、Userテーブルとの連携
     @GetMapping("/condition")
     fun searchWithConditions(
             @RequestParam(name="keyword", defaultValue="#{null}") keyword: String?,
@@ -50,19 +50,24 @@ class ProjectsController(private val projectsRepository: ProjectsRepository, pri
         }else{
             1
         }
-        var projectsList: MutableList<Projects> = projectsRepository.findAll()
+        var projectsSet: Set<Projects> = projectsRepository.findAll().toSet()
+
         if (keyword is String){
-            projectsList = searchWithKeyWord(projectsList, keyword)
+            val nameResult:Set<Projects> = projectsRepository.findByNameLike("%$keyword%").toSet()
+            projectsSet = projectsSet.intersect(nameResult)
         }
         if (user is String){
-            projectsList = searchWithUser(projectsList, user)
+            val userResult: Set<Projects> = projectsRepository.findByCreatedUserId("$user").toSet()
+            projectsSet = projectsSet.intersect(userResult)
         }
         if (rawTags is String) {
             rawTags.split("+")
         }
-        println(projectsList)
-        projectsList = filterWithRecruiting(projectsList, recruiting)
-        println(projectsList)
+        if (recruiting == 1 || recruiting == 0){
+            val recruitingResult: Set<Projects> = projectsRepository.findByRecruiting(recruiting).toSet()
+            projectsSet = projectsSet.intersect(recruitingResult)
+        }
+        val projectsList: MutableList<Projects> = projectsSet.toMutableList()
         when(sortOrder){
             "asc" -> projectsList.sortBy{it.created_at}
             "desc" -> {
@@ -70,36 +75,8 @@ class ProjectsController(private val projectsRepository: ProjectsRepository, pri
                 projectsList.reverse()
             }
         }
-        println(projectsList)
         if (projectsList.size == 0) return ResponseEntity.notFound().build()
         return ResponseEntity.ok(projectsList)
-    }
-
-    fun searchWithUser(projectsList: MutableList<Projects>, userID: String): MutableList<Projects>{
-        val results: MutableList<Projects> = mutableListOf()
-        for (projects in projectsList){
-            if (userID == projects.createdUserId) results.add(projects)
-        }
-        return results
-    }
-
-    fun searchWithKeyWord(projectsList: MutableList<Projects>, keyword: String): MutableList<Projects>{
-        val results: MutableList<Projects> = mutableListOf()
-        val regex = Regex(keyword)
-        for (projects in projectsList){
-            if (regex.containsMatchIn(projects.name)) results.add(projects)
-        }
-        return results
-    }
-
-    fun filterWithRecruiting(projectsList: MutableList<Projects>, recruiting: Int): MutableList<Projects>{
-        val results: MutableList<Projects> = mutableListOf()
-        for (projects in projectsList){
-            print(projects.recruiting)
-            println(recruiting)
-            if (projects.recruiting == recruiting) results.add(projects)
-        }
-        return results
     }
 
     @GetMapping("/{id}")
@@ -110,18 +87,11 @@ class ProjectsController(private val projectsRepository: ProjectsRepository, pri
         }catch (e: IllegalArgumentException){
             return ResponseEntity.badRequest().build()
         }
-        val projects: Projects? =  findByID(projectId)
+
+        val projects: Projects? =  projectsRepository.findById(projectId)[0]
         if (projects is Projects) return ResponseEntity.ok(projects)
 
         return ResponseEntity.notFound().build()
-    }
-
-    fun findByID(projectId: UUID): Projects?{
-        val projectsList: List<Projects> = projectsRepository.findAll()
-        for(project in projectsList){
-            if (project.id == projectId) return project
-        }
-        return null
     }
 
     @DeleteMapping("/{id}")
@@ -132,7 +102,10 @@ class ProjectsController(private val projectsRepository: ProjectsRepository, pri
         }catch (e: IllegalArgumentException){
             return ResponseEntity.badRequest().build()
         }
-        val project: Projects = findByID(projectId) ?: return ResponseEntity.badRequest().build()
+        val projectsList: List<Projects> = projectsRepository.findById(projectId)
+        if (projectsList.isEmpty()) return ResponseEntity.badRequest().build()
+
+        val project: Projects = projectsList[0]
         if (project.createdUserId == user){
             projectsRepository.delete(project)
             return ResponseEntity.ok("Deleted")
@@ -165,20 +138,8 @@ class SitesController(private val sitesRepository: SitesRepository){
         }catch (e: IllegalArgumentException){
             return ResponseEntity.badRequest().build()
         }
-        val sitesList = findByID(projectId)
-        if (sitesList.size != 0) return ResponseEntity.ok(sitesList.toList())
+        val sitesList = sitesRepository.findByProjectId(projectId)
+        if (sitesList.isNotEmpty()) return ResponseEntity.ok(sitesList.toList())
         return ResponseEntity.notFound().build()
-    }
-
-    fun findByID(projectId: UUID): MutableList<Sites>{
-        val sitesList: MutableList<Sites> = mutableListOf()
-        val getSites: List<Sites> = sitesRepository.findAll()
-        for (sites in getSites){
-            if (sites.projectId == projectId){
-                print(sites.id)
-                sitesList.add(sites)
-            }
-        }
-        return sitesList
     }
 }
