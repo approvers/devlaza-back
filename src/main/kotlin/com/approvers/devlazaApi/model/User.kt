@@ -7,12 +7,13 @@ import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue
 import javax.persistence.Id
+import javax.validation.constraints.Email
 
 @Entity
 data class User(
 		@Id @GeneratedValue(generator="uuid2") @GenericGenerator(name="uuid2", strategy="uuid2") @Column(columnDefinition="BINARY(16)") var id: UUID? = null,
 		@Column(name="name", nullable=false) var name: String,
-		@Column(name="birthDay", nullable=false) var birthDay: LocalDateTime? = null,
+		@Column(name="birthDay", nullable=false) var birthDay: LocalDateTime? = LocalDateTime.of(1900, 1, 1, 0, 0, 0),
 		@Column(name="bio", nullable=false) var bio:String = "",
 		@Column(name="favoriteLang", nullable=false) var favoriteLang: String = "",
 		@Column(name="passWord", nullable=false) var passWord: String,
@@ -47,4 +48,16 @@ data class MailToken(
 		@Id @GeneratedValue(generator="uuid2") @GenericGenerator(name="uuid2", strategy="uuid2") @Column(columnDefinition="BINARY(16)") var id: UUID? = null,
 		@Column(name="userId", nullable=false) var userId: UUID,
 		@Column(name="token", nullable=false) var token: String
+)
+
+data class UserPoster(
+		var name: String,
+		var passWord: String,
+		var showId: String,
+		@Email var mailAddress: String
+)
+
+data class LoginPoster(
+		var address: String,
+		var password: String
 )
