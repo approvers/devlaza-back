@@ -22,15 +22,26 @@ class ProjectsController(private val projectsRepository: ProjectsRepository, pri
                 introduction = rawData.introduction,
                 createdUserId = rawData.user_id
         )
-        val created: List<String> = rawData.sites.split(":")
+
+        val dividedRawSites: List<String> = rawData.sites.split("+")
+        val sites: MutableList<List<String>> = mutableListOf()
+        for (rawSite in dividedRawSites){
+            val colonIndex: Int = rawSite.indexOf("-:-")
+            if (colonIndex == -1) continue
+            val site: List<String> = rawSite.split("-:-")
+            sites.add(site)
+        }
+
         projectsRepository.save(projects)
-        sitesController.createNewSite(
-            SitesPoster(
-                explanation = created[0],
-                url = created[1],
-                projectId = projects.id!!
+        for (site in sites) {
+            sitesController.createNewSite(
+                    SitesPoster(
+                            explanation = site[0],
+                            url = site[1],
+                            projectId = projects.id!!
+                    )
             )
-        )
+        }
         return projects
     }
 
@@ -43,39 +54,27 @@ class ProjectsController(private val projectsRepository: ProjectsRepository, pri
             @RequestParam(name="tags", defaultValue="#{null}") rawTags: String?,
             @RequestParam(name="sort", defaultValue="asc") sortOrder: String,
             @RequestParam(name="recruiting", defaultValue="1") rawRecruiting: String?
-
-    ): ResponseEntity<MutableList<Projects>>{
+    ): ResponseEntity<List<Projects>>{
         val recruiting: Int = if(rawRecruiting is String && rawRecruiting.toIntOrNull() != null) {
             rawRecruiting.toInt()
         }else{
             1
         }
-        var projectsSet: Set<Projects> = projectsRepository.findAll().toSet()
-
-        if (keyword is String){
-            val nameResult:Set<Projects> = projectsRepository.findByNameLike("%$keyword%").toSet()
-            projectsSet = projectsSet.intersect(nameResult)
-        }
-        if (user is String){
-            val userResult: Set<Projects> = projectsRepository.findByCreatedUserId("$user").toSet()
-            projectsSet = projectsSet.intersect(userResult)
-        }
         if (rawTags is String) {
             rawTags.split("+")
         }
-        if (recruiting == 1 || recruiting == 0){
-            val recruitingResult: Set<Projects> = projectsRepository.findByRecruiting(recruiting).toSet()
-            projectsSet = projectsSet.intersect(recruitingResult)
-        }
-        val projectsList: MutableList<Projects> = projectsSet.toMutableList()
-        when(sortOrder){
-            "asc" -> projectsList.sortBy{it.created_at}
-            "desc" -> {
-                projectsList.sortBy{it.created_at}
-                projectsList.reverse()
-            }
-        }
-        if (projectsList.size == 0) return ResponseEntity.notFound().build()
+
+        val searchProject = SearchProject(
+                projectsRepository.findAll().toSet(),
+                projectsRepository
+        )
+        searchProject.withKeyWord(keyword)
+        searchProject.withUser(user)
+        searchProject.withRecruiting(recruiting)
+        searchProject.decideSort(sortOrder)
+
+        val projectsList: List<Projects> = searchProject.getResult()
+        if (projectsList.isEmpty()) return ResponseEntity.notFound().build()
         return ResponseEntity.ok(projectsList)
     }
 
@@ -141,5 +140,48 @@ class SitesController(private val sitesRepository: SitesRepository){
         val sitesList = sitesRepository.findByProjectId(projectId)
         if (sitesList.isNotEmpty()) return ResponseEntity.ok(sitesList.toList())
         return ResponseEntity.notFound().build()
+    }
+}
+
+class SearchProject(private var projects: Set<Projects>, private val projectsRepository: ProjectsRepository){
+    fun withKeyWord(keyword: String?){
+        if(keyword !is String) return
+        val searchResults: Set<Projects> = projectsRepository.findByNameLike("%$keyword%").toSet()
+        projects = projects.intersect(searchResults)
+    }
+
+    fun withUser(username: String?){
+        if(username !is String) return
+        val userResult: Set<Projects> = projectsRepository.findByCreatedUserId("$username").toSet()
+        projects = projects.intersect(userResult)
+    }
+
+    // TODO: そのうちやる
+    fun withTags(tags: List<String>){
+
+    }
+
+    fun withRecruiting(recruiting: Int){
+        if (recruiting == 1 || recruiting == 0){
+            val recruitingResult: Set<Projects> = projectsRepository.findByRecruiting(recruiting).toSet()
+            projects = projects.intersect(recruitingResult)
+        }
+    }
+
+    fun decideSort(sortOrder: String?){
+        val projectsList: MutableList<Projects> = projects.toMutableList()
+        when(sortOrder){
+            "asc" -> projectsList.sortBy{it.created_at}
+            "desc" -> {
+                projectsList.sortBy{it.created_at}
+                projectsList.reverse()
+            }
+            else -> projectsList.sortBy{it.created_at}
+        }
+        projects = projectsList.toSet()
+    }
+
+    fun getResult(): List<Projects>{
+        return projects.toMutableList()
     }
 }
