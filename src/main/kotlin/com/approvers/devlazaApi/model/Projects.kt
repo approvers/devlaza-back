@@ -55,7 +55,7 @@ data class TagsToProjects(
 ): Serializable
 
 @Entity
-data class favorite(
+data class Favorite(
         @Column(name="user_id", nullable = false) var user_id: String,
         @Column(name="project_id", nullable = false) var project_id: String,
         @Id @GeneratedValue(generator = "uuid2") @GenericGenerator(name = "uuid2", strategy = "uuid2") @Column(columnDefinition = "BINARY(16)") var id: UUID? = null
