@@ -35,6 +35,6 @@ data class DevelopExp(
 @Entity
 data class Follow(
 		@Id @GeneratedValue(generator="uuid2") @GenericGenerator(name="uuid2", strategy="uuid2") @Column(columnDefinition="BINARY(16)") var id: UUID,
-		@Column(name="user_id") var userId: Int,
-		@Column(name="following_id") var followingId: Int
+		@Column(name="user_id") var userId: UUID,
+		@Column(name="following_user_id") var followingUserId: UUID
 )
