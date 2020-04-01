@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.lang.IllegalArgumentException
 import java.util.*
-import javax.swing.text.html.HTML
 import javax.validation.Valid
 
 @RestController
@@ -107,7 +106,18 @@ class ProjectsController(
     fun divideTags(rawTags: String?): List<String>{
         if (rawTags !is String) return listOf()
 
-        return rawTags.split("+")
+        val regex = Regex("\\+")
+        val tags: MutableList<String>
+        tags = if (regex.containsMatchIn(rawTags)){
+            rawTags.split("+").toMutableList()
+        }else{
+            rawTags.split(" ").toMutableList()
+        }
+
+        while (tags.indexOf("") != -1){
+            tags.removeAt(tags.indexOf(""))
+        }
+        return tags.toList()
     }
 
     @GetMapping("/{id}")
@@ -195,12 +205,17 @@ class SearchProject(private var projects: Set<Projects>, private val projectsRep
         for (project in projects){
             val projectId: UUID = project.id!!
             var tagsCount: Int = tags.size
+            println(tagsCount)
 
-            val tagsToProjectsBridgeList: List<TagsToProjectsBridge> = tagsToProjectsBridgeRepository.findByProjectId(projectId)
-            println(projectId)
-            println(tagsToProjectsBridgeRepository.findAll())
-            println(tagsToProjectsBridgeList)
-            for (tagsToProjectBridge in tagsToProjectsBridgeList){
+            val allTags: List<TagsToProjectsBridge> = tagsToProjectsBridgeRepository.findAll()
+
+            val tagsList: MutableList<TagsToProjectsBridge> = mutableListOf()
+            for (tag in allTags){
+                if (tag.projectId == projectId) tagsList.add(tag)
+            }
+            println(tagsList)
+
+            for (tagsToProjectBridge in tagsList){
                 val tagName: String = tagsToProjectBridge.tagName
                 for (tag in tags){
                     if (tag == tagName){
@@ -209,13 +224,12 @@ class SearchProject(private var projects: Set<Projects>, private val projectsRep
                     }
                 }
             }
+            println(tagsCount)
             if (tagsCount == 0){
                 result.add(project)
             }
         }
-        println(projects)
         projects = projects.intersect(result)
-        println(projects)
     }
 
     fun withRecruiting(recruiting: Int){
