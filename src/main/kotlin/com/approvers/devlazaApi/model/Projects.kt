@@ -48,9 +48,9 @@ data class Tags(
 ): Serializable
 
 @Entity
-data class TagsToProjects(
-        @Column(name="project_id", nullable = false) var project_id: UUID,
-        @Column(name="tag_id", nullable = false) var tag_id: UUID,
+data class TagsToProjectsBridge(
+        @Column(name="project_id", nullable = false) var projectId: UUID,
+		@Column(name="tag_name", nullable = false) var tagName: String,
         @Id @GeneratedValue(generator = "uuid2") @GenericGenerator(name = "uuid2", strategy = "uuid2") @Column(columnDefinition = "BINARY(16)") var id: UUID? = null
 ): Serializable
 
