@@ -18,3 +18,8 @@ interface ProjectsRepository: JpaRepository<Projects, String>{
 interface SitesRepository: JpaRepository<Sites, Long>{
 	fun findByProjectId(id: UUID): List<Sites>
 }
+
+@Repository
+interface TagsRepository: JpaRepository<String, String>{
+
+}
