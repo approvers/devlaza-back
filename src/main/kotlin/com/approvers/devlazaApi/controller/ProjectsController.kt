@@ -63,7 +63,6 @@ class ProjectsController(
                     tagName=tag,
                     projectId=projects.id!!
             )
-            println(projects.id)
             tagsToProjectsBridgeRepository.save(tmp)
         }
 
@@ -205,7 +204,6 @@ class SearchProject(private var projects: Set<Projects>, private val projectsRep
         for (project in projects){
             val projectId: UUID = project.id!!
             var tagsCount: Int = tags.size
-            println(tagsCount)
 
             val allTags: List<TagsToProjectsBridge> = tagsToProjectsBridgeRepository.findAll()
 
@@ -213,7 +211,6 @@ class SearchProject(private var projects: Set<Projects>, private val projectsRep
             for (tag in allTags){
                 if (tag.projectId == projectId) tagsList.add(tag)
             }
-            println(tagsList)
 
             for (tagsToProjectBridge in tagsList){
                 val tagName: String = tagsToProjectBridge.tagName
@@ -224,7 +221,6 @@ class SearchProject(private var projects: Set<Projects>, private val projectsRep
                     }
                 }
             }
-            println(tagsCount)
             if (tagsCount == 0){
                 result.add(project)
             }
