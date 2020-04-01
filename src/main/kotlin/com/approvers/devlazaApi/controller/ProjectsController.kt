@@ -139,7 +139,7 @@ class ProjectsController(
     }
 
     @DeleteMapping("/{id}")
-    fun deleteProject(@PathVariable(value="id") rawId: String?, @RequestParam(name="user", required=true) user: String): ResponseEntity<String>{
+    fun deleteProject(@PathVariable(value="id") rawId: String?, @RequestParam(name="token", required=true) token: String): ResponseEntity<String>{
         val projectId: UUID
         try{
             projectId = UUID.fromString(rawId)
@@ -154,8 +154,13 @@ class ProjectsController(
         val projectCreatedUser: List<User> = userRepository.findById(project.createdUserId!!)
         if (projectCreatedUser.isEmpty()) return ResponseEntity.badRequest().build()
 
+        val tokenList: List<Token> = tokenRepository.findByToken(token)
 
-        if (projectCreatedUser[0].name == user){
+        if (tokenList.isEmpty()) return ResponseEntity.badRequest().build()
+
+        val user = tokenList[0].userId
+
+        if (project.createdUserId == user){
             projectsRepository.delete(project)
             return ResponseEntity.ok("Deleted")
         }
