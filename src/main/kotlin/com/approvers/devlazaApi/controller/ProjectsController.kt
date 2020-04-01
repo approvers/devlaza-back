@@ -1,10 +1,7 @@
 package com.approvers.devlazaApi.controller
 
 import com.approvers.devlazaApi.model.*
-import com.approvers.devlazaApi.repository.ProjectsRepository
-import com.approvers.devlazaApi.repository.SitesRepository
-import com.approvers.devlazaApi.repository.TagsRepository
-import com.approvers.devlazaApi.repository.TagsToProjectsBridgeRepository
+import com.approvers.devlazaApi.repository.*
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.lang.IllegalArgumentException
@@ -17,20 +14,60 @@ class ProjectsController(
         private val projectsRepository: ProjectsRepository,
         private val sitesController: SitesController,
         private val tagsToProjectsBridgeRepository: TagsToProjectsBridgeRepository,
-        private val tagsRepository: TagsRepository
+        private val tagsRepository: TagsRepository,
+        private val tokenRepository: TokenRepository,
+        private val userRepository: UserRepository
 ){
     @GetMapping("/")
     fun getAllProjects(): List<Projects> = projectsRepository.findAll()
 
     @PostMapping("/")
     fun createNewProject(@Valid @RequestBody rawData: ProjectPoster): Projects{
+        val token: Token = tokenCheck(rawData.token) ?: return Projects(name="invalid token", introduction="")
         val projects = Projects(
                 name = rawData.name,
                 introduction = rawData.introduction,
-                createdUserId = rawData.user_id
+                createdUserId = token.userId
         )
 
-        val dividedRawSites: List<String> = rawData.sites.split("+")
+        projectsRepository.save(projects)
+
+        saveSites(rawData.sites, projects.id!!)
+
+        saveTags(rawData.tags, projects.id!!)
+
+        return projects
+    }
+
+    fun saveTags(rawTags: String, projectId: UUID){
+        val tags: List<String> = divideTags(rawTags)
+
+        for (tag in tags){
+            createNewTag(tag)
+            val tmp = TagsToProjectsBridge(
+                    tagName=tag,
+                    projectId=projectId
+            )
+            tagsToProjectsBridgeRepository.save(tmp)
+        }
+    }
+
+    fun createNewTag(tag: String){
+        if (tagsRepository.findByName(tag).isNotEmpty()) return
+
+        val newTag = Tags(name=tag)
+        tagsRepository.save(newTag)
+    }
+
+    fun tokenCheck(token: String): Token?{
+        val tokenList: List<Token> = tokenRepository.findByToken(token)
+        if (tokenList.isEmpty()) return null
+        return tokenList[0]
+    }
+
+    fun divideSites(rawSites: String?): MutableList<List<String>>?{
+        if (rawSites !is String) return null
+        val dividedRawSites: List<String> = rawSites.split("+")
         val sites: MutableList<List<String>> = mutableListOf()
 
         for (rawSite in dividedRawSites){
@@ -39,34 +76,21 @@ class ProjectsController(
             val site: List<String> = rawSite.split("-:-")
             sites.add(site)
         }
+        return sites
+    }
 
-        projectsRepository.save(projects)
+    fun saveSites(rawSites: String?, projectId: UUID){
+        val sites: MutableList<List<String>> = divideSites(rawSites) ?: return
+
         for (site in sites) {
             sitesController.createNewSite(
                     SitesPoster(
                             explanation = site[0],
                             url = site[1],
-                            projectId = projects.id!!
+                            projectId = projectId
                     )
             )
         }
-
-        val tags: List<String> = divideTags(rawData.tags)
-
-        for (tag in tags){
-            if (tagsRepository.findByName(tag).isEmpty()){
-                val newTag = Tags(name=tag)
-                tagsRepository.save(newTag)
-            }
-
-            val tmp = TagsToProjectsBridge(
-                    tagName=tag,
-                    projectId=projects.id!!
-            )
-            tagsToProjectsBridgeRepository.save(tmp)
-        }
-
-        return projects
     }
 
     // TODO: tag検索と時間での絞り込みの実装、Userテーブルとの連携
@@ -98,12 +122,21 @@ class ProjectsController(
         searchProject.decideSort(sortOrder)
 
         val projectsList: List<Projects> = searchProject.getResult()
+
         if (projectsList.isEmpty()) return ResponseEntity.notFound().build()
         return ResponseEntity.ok(projectsList)
     }
 
     fun divideTags(rawTags: String?): List<String>{
-        if (rawTags !is String) return listOf()
+        val tags = getTags(rawTags) ?: return listOf()
+        while (tags.indexOf("") != -1){
+            tags.removeAt(tags.indexOf(""))
+        }
+        return tags.toList()
+    }
+
+    fun getTags(rawTags: String?): MutableList<String>?{
+        if (rawTags !is String) return null
 
         val regex = Regex("\\+")
         val tags: MutableList<String>
@@ -112,45 +145,55 @@ class ProjectsController(
         }else{
             rawTags.split(" ").toMutableList()
         }
-
-        while (tags.indexOf("") != -1){
-            tags.removeAt(tags.indexOf(""))
-        }
-        return tags.toList()
+        return tags
     }
 
     @GetMapping("/{id}")
     fun getProjectById(@PathVariable(value="id") rawId: String?): ResponseEntity<Projects>{
-        val projectId: UUID
-        try{
-           projectId = UUID.fromString(rawId)
-        }catch (e: IllegalArgumentException){
-            return ResponseEntity.badRequest().build()
-        }
+        val projectId: UUID = convertStringToUUID(rawId) ?: return ResponseEntity.badRequest().build()
 
-        val projects: Projects? =  projectsRepository.findById(projectId)[0]
-        if (projects is Projects) return ResponseEntity.ok(projects)
+        val project: Projects =  getProject(projectId)?: return ResponseEntity.badRequest().build()
 
-        return ResponseEntity.notFound().build()
+        return ResponseEntity.ok(project)
     }
 
     @DeleteMapping("/{id}")
-    fun deleteProject(@PathVariable(value="id") rawId: String?, @RequestParam(name="user", required=true) user: String): ResponseEntity<String>{
-        val projectId: UUID
-        try{
-            projectId = UUID.fromString(rawId)
-        }catch (e: IllegalArgumentException){
-            return ResponseEntity.badRequest().build()
-        }
-        val projectsList: List<Projects> = projectsRepository.findById(projectId)
-        if (projectsList.isEmpty()) return ResponseEntity.badRequest().build()
+    fun deleteProject(@PathVariable(value="id") rawId: String?, @RequestParam(name="token", required=true) token: String): ResponseEntity<String>{
+        val projectId: UUID = convertStringToUUID(rawId) ?: return ResponseEntity.badRequest().build()
 
-        val project: Projects = projectsList[0]
-        if (project.createdUserId == user){
+        val project: Projects = getProject(projectId) ?: return ResponseEntity.badRequest().build()
+
+        val userIdFromToken: UUID = getUserFromToken(token) ?: return ResponseEntity.badRequest().build()
+
+        if (project.createdUserId == userIdFromToken){
             projectsRepository.delete(project)
             return ResponseEntity.ok("Deleted")
         }
         return ResponseEntity.badRequest().build()
+    }
+
+    fun getProject(projectId: UUID): Projects?{
+        val projectsList: List<Projects> = projectsRepository.findById(projectId)
+        if (projectsList.isEmpty()) return null
+        return projectsList[0]
+    }
+
+    fun getUserFromToken(token: String): UUID?{
+        val tokenList: List<Token> = tokenRepository.findByToken(token)
+
+        if (tokenList.isEmpty()) return null
+
+        return tokenList[0].userId
+    }
+
+    fun convertStringToUUID(rawId: String?): UUID?{
+        val projectId: UUID
+        try{
+            projectId = UUID.fromString(rawId)
+        }catch (e: IllegalArgumentException){
+            return null
+        }
+        return projectId
     }
 }
 

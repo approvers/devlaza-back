@@ -14,14 +14,14 @@ data class Projects(
         @Column(name="name", nullable = false) var name:String,
         @Column(name="introduction") var introduction: String,
         @Id @GeneratedValue(generator = "uuid2") @GenericGenerator(name = "uuid2", strategy = "uuid2") @Column(columnDefinition = "BINARY(16)") var id: UUID? = null,
-        @Column(name="created_at", nullable = false) var created_at: String = LocalDateTime.now().toString(),
-        @Column(name="created_user_id", nullable = false) var createdUserId: String,
+        @Column(name="created_at", nullable = false) var created_at: LocalDateTime = LocalDateTime.now(),
+        @Column(name="created_user_id", nullable = false) var createdUserId: UUID? = null,
         @Column(name="recruiting", nullable = false) var recruiting: Int = 1
 ): Serializable
 
 data class ProjectPoster(
         var name: String,
-        var user_id: String,
+        var token: String,
         var introduction: String,
         var sites: String,
         var tags: String
