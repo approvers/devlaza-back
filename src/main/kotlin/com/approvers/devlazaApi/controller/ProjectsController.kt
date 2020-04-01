@@ -3,15 +3,23 @@ package com.approvers.devlazaApi.controller
 import com.approvers.devlazaApi.model.*
 import com.approvers.devlazaApi.repository.ProjectsRepository
 import com.approvers.devlazaApi.repository.SitesRepository
+import com.approvers.devlazaApi.repository.TagsRepository
+import com.approvers.devlazaApi.repository.TagsToProjectsBridgeRepository
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.lang.IllegalArgumentException
 import java.util.*
+import javax.swing.text.html.HTML
 import javax.validation.Valid
 
 @RestController
 @RequestMapping("/projects")
-class ProjectsController(private val projectsRepository: ProjectsRepository, private val sitesController: SitesController){
+class ProjectsController(
+        private val projectsRepository: ProjectsRepository,
+        private val sitesController: SitesController,
+        private val tagsToProjectsBridgeRepository: TagsToProjectsBridgeRepository,
+        private val tagsRepository: TagsRepository
+){
     @GetMapping("/")
     fun getAllProjects(): List<Projects> = projectsRepository.findAll()
 
@@ -25,6 +33,7 @@ class ProjectsController(private val projectsRepository: ProjectsRepository, pri
 
         val dividedRawSites: List<String> = rawData.sites.split("+")
         val sites: MutableList<List<String>> = mutableListOf()
+
         for (rawSite in dividedRawSites){
             val colonIndex: Int = rawSite.indexOf("-:-")
             if (colonIndex == -1) continue
@@ -42,6 +51,23 @@ class ProjectsController(private val projectsRepository: ProjectsRepository, pri
                     )
             )
         }
+
+        val tags: List<String> = divideTags(rawData.tags)
+
+        for (tag in tags){
+            if (tagsRepository.findByName(tag).isEmpty()){
+                val newTag = Tags(name=tag)
+                tagsRepository.save(newTag)
+            }
+
+            val tmp = TagsToProjectsBridge(
+                    tagName=tag,
+                    projectId=projects.id!!
+            )
+            println(projects.id)
+            tagsToProjectsBridgeRepository.save(tmp)
+        }
+
         return projects
     }
 
@@ -55,27 +81,33 @@ class ProjectsController(private val projectsRepository: ProjectsRepository, pri
             @RequestParam(name="sort", defaultValue="asc") sortOrder: String,
             @RequestParam(name="recruiting", defaultValue="1") rawRecruiting: String?
     ): ResponseEntity<List<Projects>>{
-        val recruiting: Int = if(rawRecruiting is String && rawRecruiting.toIntOrNull() != null) {
+        val recruiting: Int = if(rawRecruiting != null && rawRecruiting.toIntOrNull() != null) {
             rawRecruiting.toInt()
         }else{
             1
         }
-        if (rawTags is String) {
-            rawTags.split("+")
-        }
+        val tags: List<String> = divideTags(rawTags)
 
         val searchProject = SearchProject(
                 projectsRepository.findAll().toSet(),
-                projectsRepository
+                projectsRepository,
+                tagsToProjectsBridgeRepository
         )
         searchProject.withKeyWord(keyword)
         searchProject.withUser(user)
         searchProject.withRecruiting(recruiting)
+        searchProject.withTags(tags)
         searchProject.decideSort(sortOrder)
 
         val projectsList: List<Projects> = searchProject.getResult()
         if (projectsList.isEmpty()) return ResponseEntity.notFound().build()
         return ResponseEntity.ok(projectsList)
+    }
+
+    fun divideTags(rawTags: String?): List<String>{
+        if (rawTags !is String) return listOf()
+
+        return rawTags.split("+")
     }
 
     @GetMapping("/{id}")
@@ -143,7 +175,7 @@ class SitesController(private val sitesRepository: SitesRepository){
     }
 }
 
-class SearchProject(private var projects: Set<Projects>, private val projectsRepository: ProjectsRepository){
+class SearchProject(private var projects: Set<Projects>, private val projectsRepository: ProjectsRepository, private val tagsToProjectsBridgeRepository: TagsToProjectsBridgeRepository){
     fun withKeyWord(keyword: String?){
         if(keyword !is String) return
         val searchResults: Set<Projects> = projectsRepository.findByNameLike("%$keyword%").toSet()
@@ -156,9 +188,34 @@ class SearchProject(private var projects: Set<Projects>, private val projectsRep
         projects = projects.intersect(userResult)
     }
 
-    // TODO: そのうちやる
     fun withTags(tags: List<String>){
+        if (tags.isEmpty()) return
 
+        val result: MutableSet<Projects> = mutableSetOf()
+        for (project in projects){
+            val projectId: UUID = project.id!!
+            var tagsCount: Int = tags.size
+
+            val tagsToProjectsBridgeList: List<TagsToProjectsBridge> = tagsToProjectsBridgeRepository.findByProjectId(projectId)
+            println(projectId)
+            println(tagsToProjectsBridgeRepository.findAll())
+            println(tagsToProjectsBridgeList)
+            for (tagsToProjectBridge in tagsToProjectsBridgeList){
+                val tagName: String = tagsToProjectBridge.tagName
+                for (tag in tags){
+                    if (tag == tagName){
+                        tagsCount--
+                        break
+                    }
+                }
+            }
+            if (tagsCount == 0){
+                result.add(project)
+            }
+        }
+        println(projects)
+        projects = projects.intersect(result)
+        println(projects)
     }
 
     fun withRecruiting(recruiting: Int){
