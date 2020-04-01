@@ -1,10 +1,7 @@
 package com.approvers.devlazaApi.controller
 
 import com.approvers.devlazaApi.model.*
-import com.approvers.devlazaApi.repository.ProjectsRepository
-import com.approvers.devlazaApi.repository.SitesRepository
-import com.approvers.devlazaApi.repository.TagsRepository
-import com.approvers.devlazaApi.repository.TagsToProjectsBridgeRepository
+import com.approvers.devlazaApi.repository.*
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.lang.IllegalArgumentException
@@ -17,17 +14,24 @@ class ProjectsController(
         private val projectsRepository: ProjectsRepository,
         private val sitesController: SitesController,
         private val tagsToProjectsBridgeRepository: TagsToProjectsBridgeRepository,
-        private val tagsRepository: TagsRepository
+        private val tagsRepository: TagsRepository,
+        private val tokenRepository: TokenRepository,
+        private val userRepository: UserRepository
 ){
     @GetMapping("/")
     fun getAllProjects(): List<Projects> = projectsRepository.findAll()
 
     @PostMapping("/")
     fun createNewProject(@Valid @RequestBody rawData: ProjectPoster): Projects{
+        val tokenList: List<Token> = tokenRepository.findByToken(rawData.token)
+        if (tokenList.isEmpty()) return Projects(name="invalid token", introduction="")
+
+        val token: Token = tokenList[0]
+
         val projects = Projects(
                 name = rawData.name,
                 introduction = rawData.introduction,
-                createdUserId = rawData.user_id
+                createdUserId = token.userId
         )
 
         val dividedRawSites: List<String> = rawData.sites.split("+")
@@ -146,7 +150,12 @@ class ProjectsController(
         if (projectsList.isEmpty()) return ResponseEntity.badRequest().build()
 
         val project: Projects = projectsList[0]
-        if (project.createdUserId == user){
+
+        val projectCreatedUser: List<User> = userRepository.findById(project.createdUserId!!)
+        if (projectCreatedUser.isEmpty()) return ResponseEntity.badRequest().build()
+
+
+        if (projectCreatedUser[0].name == user){
             projectsRepository.delete(project)
             return ResponseEntity.ok("Deleted")
         }
