@@ -16,8 +16,7 @@ class ProjectsController(
         private val sitesController: SitesController,
         private val tagsToProjectsBridgeRepository: TagsToProjectsBridgeRepository,
         private val tagsRepository: TagsRepository,
-        private val tokenRepository: TokenRepository,
-        private val userRepository: UserRepository
+        private val tokenRepository: TokenRepository
 ){
     @GetMapping("/")
     fun getAllProjects(): List<Projects> = projectsRepository.findAll()
