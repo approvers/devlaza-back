@@ -9,8 +9,13 @@ import java.util.*
 class ProjectSearcher(private var projects: Set<Projects>, private val projectsRepository: ProjectsRepository, private val tagsToProjectsBridgeRepository: TagsToProjectsBridgeRepository){
 	fun withKeyWord(keyword: String?){
 		if(keyword !is String) return
-		val searchResults: Set<Projects> = projectsRepository.findByNameLike("%$keyword%").toSet()
-		projects = projects.intersect(searchResults)
+
+		val keywords: List<String> = keyword.split(" ")
+
+		for (key in keywords) {
+			val searchResults: Set<Projects> = projectsRepository.findByNameLike("%$key%").toSet()
+			projects = projects.intersect(searchResults)
+		}
 	}
 
 	fun withUser(username: String?){
