@@ -39,60 +39,6 @@ class ProjectsController(
         return projects
     }
 
-    fun saveTags(rawTags: String, projectId: UUID){
-        val tags: List<String> = divideTags(rawTags)
-
-        for (tag in tags){
-            createNewTag(tag)
-            val tmp = TagsToProjectsBridge(
-                    tagName=tag,
-                    projectId=projectId
-            )
-            tagsToProjectsBridgeRepository.save(tmp)
-        }
-    }
-
-    fun createNewTag(tag: String){
-        if (tagsRepository.findByName(tag).isNotEmpty()) return
-
-        val newTag = Tags(name=tag)
-        tagsRepository.save(newTag)
-    }
-
-    fun tokenCheck(token: String): Token?{
-        val tokenList: List<Token> = tokenRepository.findByToken(token)
-        if (tokenList.isEmpty()) return null
-        return tokenList[0]
-    }
-
-    fun divideSites(rawSites: String?): MutableList<List<String>>?{
-        if (rawSites !is String) return null
-        val dividedRawSites: List<String> = rawSites.split("+")
-        val sites: MutableList<List<String>> = mutableListOf()
-
-        for (rawSite in dividedRawSites){
-            val colonIndex: Int = rawSite.indexOf("-:-")
-            if (colonIndex == -1) continue
-            val site: List<String> = rawSite.split("-:-")
-            sites.add(site)
-        }
-        return sites
-    }
-
-    fun saveSites(rawSites: String?, projectId: UUID){
-        val sites: MutableList<List<String>> = divideSites(rawSites) ?: return
-
-        for (site in sites) {
-            sitesController.createNewSite(
-                    SitesPoster(
-                            explanation = site[0],
-                            url = site[1],
-                            projectId = projectId
-                    )
-            )
-        }
-    }
-
     // TODO: tag検索と時間での絞り込みの実装、Userテーブルとの連携
     @GetMapping("/condition")
     fun searchWithConditions(
@@ -127,27 +73,6 @@ class ProjectsController(
         return ResponseEntity.ok(projectsList)
     }
 
-    fun divideTags(rawTags: String?): List<String>{
-        val tags = getTags(rawTags) ?: return listOf()
-        while (tags.indexOf("") != -1){
-            tags.removeAt(tags.indexOf(""))
-        }
-        return tags.toList()
-    }
-
-    fun getTags(rawTags: String?): MutableList<String>?{
-        if (rawTags !is String) return null
-
-        val regex = Regex("\\+")
-        val tags: MutableList<String>
-        tags = if (regex.containsMatchIn(rawTags)){
-            rawTags.split("+").toMutableList()
-        }else{
-            rawTags.split(" ").toMutableList()
-        }
-        return tags
-    }
-
     @GetMapping("/{id}")
     fun getProjectById(@PathVariable(value="id") rawId: String?): ResponseEntity<Projects>{
         val projectId: UUID = convertStringToUUID(rawId) ?: return ResponseEntity.badRequest().build()
@@ -172,13 +97,13 @@ class ProjectsController(
         return ResponseEntity.badRequest().build()
     }
 
-    fun getProject(projectId: UUID): Projects?{
+    private fun getProject(projectId: UUID): Projects?{
         val projectsList: List<Projects> = projectsRepository.findById(projectId)
         if (projectsList.isEmpty()) return null
         return projectsList[0]
     }
 
-    fun getUserFromToken(token: String): UUID?{
+    private fun getUserFromToken(token: String): UUID?{
         val tokenList: List<Token> = tokenRepository.findByToken(token)
 
         if (tokenList.isEmpty()) return null
@@ -186,7 +111,7 @@ class ProjectsController(
         return tokenList[0].userId
     }
 
-    fun convertStringToUUID(rawId: String?): UUID?{
+    private fun convertStringToUUID(rawId: String?): UUID?{
         val projectId: UUID
         try{
             projectId = UUID.fromString(rawId)
@@ -194,6 +119,82 @@ class ProjectsController(
             return null
         }
         return projectId
+    }
+
+    private fun saveTags(rawTags: String, projectId: UUID){
+        val tags: List<String> = divideTags(rawTags)
+
+        for (tag in tags){
+            createNewTag(tag)
+            val tmp = TagsToProjectsBridge(
+                    tagName=tag,
+                    projectId=projectId
+            )
+            tagsToProjectsBridgeRepository.save(tmp)
+        }
+    }
+
+    private fun createNewTag(tag: String){
+        if (tagsRepository.findByName(tag).isNotEmpty()) return
+
+        val newTag = Tags(name=tag)
+        tagsRepository.save(newTag)
+    }
+
+    private fun tokenCheck(token: String): Token?{
+        val tokenList: List<Token> = tokenRepository.findByToken(token)
+        if (tokenList.isEmpty()) return null
+        return tokenList[0]
+    }
+
+    private fun divideSites(rawSites: String?): MutableList<List<String>>?{
+        if (rawSites !is String) return null
+        val dividedRawSites: List<String> = rawSites.split("+")
+        val sites: MutableList<List<String>> = mutableListOf()
+
+        for (rawSite in dividedRawSites){
+            val colonIndex: Int = rawSite.indexOf("-:-")
+            if (colonIndex == -1) continue
+            val site: List<String> = rawSite.split("-:-")
+            sites.add(site)
+        }
+        return sites
+    }
+
+    private fun saveSites(rawSites: String?, projectId: UUID){
+        val sites: MutableList<List<String>> = divideSites(rawSites) ?: return
+
+        for (site in sites) {
+            sitesController.createNewSite(
+                    SitesPoster(
+                            explanation = site[0],
+                            url = site[1],
+                            projectId = projectId
+                    )
+            )
+        }
+    }
+
+
+    private fun divideTags(rawTags: String?): List<String>{
+        val tags = getTags(rawTags) ?: return listOf()
+        while (tags.indexOf("") != -1){
+            tags.removeAt(tags.indexOf(""))
+        }
+        return tags.toList()
+    }
+
+    private fun getTags(rawTags: String?): MutableList<String>?{
+        if (rawTags !is String) return null
+
+        val regex = Regex("\\+")
+        val tags: MutableList<String>
+        tags = if (regex.containsMatchIn(rawTags)){
+            rawTags.split("+").toMutableList()
+        }else{
+            rawTags.split(" ").toMutableList()
+        }
+        return tags
     }
 }
 
@@ -245,28 +246,9 @@ class SearchProject(private var projects: Set<Projects>, private val projectsRep
 
         val result: MutableSet<Projects> = mutableSetOf()
         for (project in projects){
-            val projectId: UUID = project.id!!
-            var tagsCount: Int = tags.size
+            val projectTags:MutableList<TagsToProjectsBridge> = getTagsBridgeWithProjectID(project.id!!)
 
-            val allTags: List<TagsToProjectsBridge> = tagsToProjectsBridgeRepository.findAll()
-
-            val tagsList: MutableList<TagsToProjectsBridge> = mutableListOf()
-            for (tag in allTags){
-                if (tag.projectId == projectId) tagsList.add(tag)
-            }
-
-            for (tagsToProjectBridge in tagsList){
-                val tagName: String = tagsToProjectBridge.tagName
-                for (tag in tags){
-                    if (tag == tagName){
-                        tagsCount--
-                        break
-                    }
-                }
-            }
-            if (tagsCount == 0){
-                result.add(project)
-            }
+		    if(checkTagsMatchProject(tags, projectTags)) result.add(project)
         }
         projects = projects.intersect(result)
     }
@@ -293,5 +275,32 @@ class SearchProject(private var projects: Set<Projects>, private val projectsRep
 
     fun getResult(): List<Projects>{
         return projects.toMutableList()
+    }
+
+    private fun getTagsBridgeWithProjectID(projectId: UUID): MutableList<TagsToProjectsBridge>{
+        val result: MutableList<TagsToProjectsBridge> = mutableListOf()
+
+        val allTags: List<TagsToProjectsBridge> = tagsToProjectsBridgeRepository.findAll()
+        for (tag in allTags){
+            if (tag.projectId == projectId) result.add(tag)
+        }
+
+        return result
+    }
+
+    private fun checkTagsMatchProject(tags: List<String>, projectTags: MutableList<TagsToProjectsBridge>): Boolean{
+        var tagsCount: Int = tags.size
+
+        for (tagsToProjectBridge in projectTags){
+            val tagName: String = tagsToProjectBridge.tagName
+            for (tag in tags){
+                if (tag == tagName){
+                    tagsCount--
+                    break
+                }
+            }
+        }
+
+        return tagsCount == 0
     }
 }
