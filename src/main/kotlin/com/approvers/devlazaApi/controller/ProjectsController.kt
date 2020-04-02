@@ -47,7 +47,9 @@ class ProjectsController(
             @RequestParam(name="user", defaultValue="#{null}") user:String?,
             @RequestParam(name="tags", defaultValue="#{null}") rawTags: String?,
             @RequestParam(name="sort", defaultValue="asc") sortOrder: String,
-            @RequestParam(name="recruiting", defaultValue="1") rawRecruiting: String?
+            @RequestParam(name="recruiting", defaultValue="1") rawRecruiting: String?,
+            @RequestParam(name="searchStartDate", defaultValue="#{null}") searchStart: String?,
+            @RequestParam(name="searchEndDate", defaultValue="#{null}") searchEnd: String?
     ): ResponseEntity<List<Projects>>{
         val recruiting: Int = if(rawRecruiting != null && rawRecruiting.toIntOrNull() != null) {
             rawRecruiting.toInt()
@@ -65,6 +67,7 @@ class ProjectsController(
         searchProject.withUser(user)
         searchProject.withRecruiting(recruiting)
         searchProject.withTags(tags)
+        searchProject.filterWithCreatedDay(searchStart, searchEnd)
         searchProject.decideSort(sortOrder)
 
         val projectsList: List<Projects> = searchProject.getResult()

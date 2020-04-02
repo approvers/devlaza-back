@@ -4,6 +4,11 @@ import com.approvers.devlazaApi.model.Projects
 import com.approvers.devlazaApi.model.TagsToProjectsBridge
 import com.approvers.devlazaApi.repository.ProjectsRepository
 import com.approvers.devlazaApi.repository.TagsToProjectsBridgeRepository
+import org.springframework.cglib.core.Local
+import java.time.DateTimeException
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.*
 
 class ProjectSearcher(private var projects: Set<Projects>, private val projectsRepository: ProjectsRepository, private val tagsToProjectsBridgeRepository: TagsToProjectsBridgeRepository){
@@ -40,6 +45,33 @@ class ProjectSearcher(private var projects: Set<Projects>, private val projectsR
 		if (recruiting == 1 || recruiting == 0){
 			val recruitingResult: Set<Projects> = projectsRepository.findByRecruiting(recruiting).toSet()
 			projects = projects.intersect(recruitingResult)
+		}
+	}
+
+	fun filterWithCreatedDay(start: String?, end: String?){
+		println(start)
+		if (start is String){
+			val result: MutableSet<Projects> = mutableSetOf()
+
+			val startSearchDate: LocalDateTime = LocalDate.parse(start).atTime(0, 0, 0)
+			for (project in projects){
+				if (startSearchDate.isBefore(project.created_at)){
+					result.add(project)
+				}
+			}
+			projects = projects.intersect(result)
+		}
+
+		if (end is String){
+			val result: MutableSet<Projects> = mutableSetOf()
+
+			val endSearchDate: LocalDateTime = LocalDate.parse(end).atTime(23, 59, 59)
+			for (project in projects){
+				if(project.created_at <= endSearchDate){
+					result.add(project)
+				}
+			}
+			projects = projects.intersect(result)
 		}
 	}
 
