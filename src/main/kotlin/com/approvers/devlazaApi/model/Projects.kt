@@ -56,8 +56,15 @@ data class TagsToProjectsBridge(
 
 @Entity
 data class Favorite(
+		@Id @GeneratedValue(generator = "uuid2") @GenericGenerator(name = "uuid2", strategy = "uuid2") @Column(columnDefinition = "BINARY(16)") var id: UUID? = null,
         @Column(name="user_id", nullable = false) var user_id: String,
-        @Column(name="project_id", nullable = false) var project_id: String,
-        @Id @GeneratedValue(generator = "uuid2") @GenericGenerator(name = "uuid2", strategy = "uuid2") @Column(columnDefinition = "BINARY(16)") var id: UUID? = null
+        @Column(name="project_id", nullable = false) var project_id: String
+)
+
+@Entity
+data class ProjectMember(
+		@Id @GeneratedValue(generator = "uuid2") @GenericGenerator(name = "uuid2", strategy = "uuid2") @Column(columnDefinition = "BINARY(16)") var id: UUID? = null,
+		@Column(name="project_id", nullable=false) var projectId: UUID,
+		@Column(name="user_id", nullable=false) var user_id: UUID
 )
 
