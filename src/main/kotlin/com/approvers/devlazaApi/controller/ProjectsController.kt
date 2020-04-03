@@ -17,7 +17,8 @@ class ProjectsController(
         private val tagsToProjectsBridgeRepository: TagsToProjectsBridgeRepository,
         private val tagsRepository: TagsRepository,
         private val tokenRepository: TokenRepository,
-        private val projectMemberRepository: ProjectMemberRepository
+        private val projectMemberRepository: ProjectMemberRepository,
+        private val userRepository: UserRepository
 ){
     @GetMapping("/")
     fun getAllProjects(): List<Projects> = projectsRepository.findAll()
@@ -43,15 +44,11 @@ class ProjectsController(
     @PatchMapping("/join/{id}")
     fun joinToProject(
             @RequestParam(name="token", defaultValue="") token: String,
-            @PathVariable(value="id") rawId: String?
+            @PathVariable(value="id") rawId: String
     ): ResponseEntity<String>{
-        val userId: UUID = getUserIdFromToken(token)?: return ResponseEntity.badRequest().build()
+        val (userId: UUID, projectId: UUID) = convertToTokenAndProjectIdMap(token, rawId)?: return ResponseEntity.badRequest().build()
 
-        val projectId: UUID = convertStringToUUID(rawId)?: return ResponseEntity.badRequest().build()
-
-        if (getProject(projectId) == null) return ResponseEntity.notFound().build()
-
-        if (projectMemberRepository.findByProjectIdAndUserId(projectId, userId).isNotEmpty()) return ResponseEntity.badRequest().build()
+        if (checkProjectMemberExists(userId, projectId)) return ResponseEntity.badRequest().build()
 
         val newMember = ProjectMember(
                 userId=userId,
@@ -59,6 +56,37 @@ class ProjectsController(
         )
         projectMemberRepository.save(newMember)
         return ResponseEntity.ok("Joined")
+    }
+
+    @DeleteMapping("/leave/{id}")
+    fun leaveFromProject(
+            @RequestParam(name="token", defaultValue="") token: String,
+            @PathVariable(value="id") rawId: String
+    ): ResponseEntity<String>{
+        val (userId: UUID, projectId: UUID) = convertToTokenAndProjectIdMap(token, rawId)?: return ResponseEntity.badRequest().build()
+
+        if (!checkProjectMemberExists(userId, projectId)) return ResponseEntity.notFound().build()
+
+        val projectMember: ProjectMember = projectMemberRepository.findByProjectIdAndUserId(projectId, userId)[0]
+
+        projectMemberRepository.delete(projectMember)
+        return ResponseEntity.ok("Deleted!")
+    }
+
+    private fun checkProjectMemberExists(userId: UUID, projectId: UUID): Boolean{
+        return projectMemberRepository.findByProjectIdAndUserId(projectId, userId).isNotEmpty()
+    }
+
+    private fun convertToTokenAndProjectIdMap(token: String, rawId: String): Pair<UUID, UUID>?{
+
+        val userId: UUID = getUserIdFromToken(token)?: return null
+
+        val projectId: UUID = convertStringToUUID(rawId)?: return null
+
+        if (userRepository.findById(userId).isEmpty()) return null
+        if (projectsRepository.findById(projectId).isEmpty()) return null
+
+        return Pair(userId, projectId)
     }
 
     // TODO: tag検索と時間での絞り込みの実装、Userテーブルとの連携
@@ -83,7 +111,8 @@ class ProjectsController(
         val searchProject = ProjectSearcher(
                 projectsRepository.findAll().toSet(),
                 projectsRepository,
-                tagsToProjectsBridgeRepository
+                tagsToProjectsBridgeRepository,
+                userRepository
         )
         searchProject.withKeyWord(keyword)
         searchProject.withUser(user)
