@@ -31,6 +31,6 @@ interface TagsToProjectsBridgeRepository: JpaRepository<TagsToProjectsBridge, St
 @Repository
 interface ProjectMemberRepository: JpaRepository<ProjectMember, String>{
 	fun findByUserId(id : UUID): List<ProjectMember>
-	fun findByProjectId(id : UUID): List<ProjectMember>
+	fun findByProjectId(projectId: UUID): List<ProjectMember>
 	fun findByProjectIdAndUserId(projectId: UUID, userId: UUID): List<ProjectMember>
 }

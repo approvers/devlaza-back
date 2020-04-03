@@ -67,14 +67,28 @@ class ProjectsController(
 
         if (!checkProjectMemberExists(userId, projectId)) return ResponseEntity.notFound().build()
 
-        val projectMember: ProjectMember = projectMemberRepository.findByProjectIdAndUserId(projectId, userId)[0]
+        val projectMember: ProjectMember = getProjectMember(userId, projectId)[0]
+
+        val projectCreatorId: UUID = projectsRepository.findById(projectId)[0].createdUserId!!
+
+        if (projectCreatorId == userId) return ResponseEntity.badRequest().body("Project created user can't leave from project")
 
         projectMemberRepository.delete(projectMember)
         return ResponseEntity.ok("Deleted!")
     }
 
     private fun checkProjectMemberExists(userId: UUID, projectId: UUID): Boolean{
-        return projectMemberRepository.findByProjectIdAndUserId(projectId, userId).isNotEmpty()
+        return getProjectMember(userId, projectId).isNotEmpty()
+    }
+
+    private fun getProjectMember(userId: UUID, projectId: UUID): MutableList<ProjectMember>{
+        val projectMemberList: List<ProjectMember> = projectMemberRepository.findAll()
+        val result: MutableList<ProjectMember> = mutableListOf()
+        for (projectMember in projectMemberList){
+            if (projectId == projectMember.projectId && userId == projectMember.userId) result.add(projectMember)
+        }
+
+        return result
     }
 
     private fun convertToTokenAndProjectIdMap(token: String, rawId: String): Pair<UUID, UUID>?{
