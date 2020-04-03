@@ -16,7 +16,8 @@ class ProjectsController(
         private val sitesController: SitesController,
         private val tagsToProjectsBridgeRepository: TagsToProjectsBridgeRepository,
         private val tagsRepository: TagsRepository,
-        private val tokenRepository: TokenRepository
+        private val tokenRepository: TokenRepository,
+        private val projectMemberRepository: ProjectMemberRepository
 ){
     @GetMapping("/")
     fun getAllProjects(): List<Projects> = projectsRepository.findAll()
@@ -37,6 +38,27 @@ class ProjectsController(
         saveTags(rawData.tags, projects.id!!)
 
         return projects
+    }
+
+    @PatchMapping("/join/{id}")
+    fun joinToProject(
+            @RequestParam(name="token", defaultValue="") token: String,
+            @PathVariable(value="id") rawId: String?
+    ): ResponseEntity<String>{
+        val userId: UUID = getUserIdFromToken(token)?: return ResponseEntity.badRequest().build()
+
+        val projectId: UUID = convertStringToUUID(rawId)?: return ResponseEntity.badRequest().build()
+
+        if (getProject(projectId) == null) return ResponseEntity.notFound().build()
+
+        if (projectMemberRepository.findByProjectIdAndUserId(projectId, userId).isNotEmpty()) return ResponseEntity.badRequest().build()
+
+        val newMember = ProjectMember(
+                userId=userId,
+                projectId=projectId
+        )
+        projectMemberRepository.save(newMember)
+        return ResponseEntity.ok("Joined")
     }
 
     // TODO: tag検索と時間での絞り込みの実装、Userテーブルとの連携
@@ -91,7 +113,7 @@ class ProjectsController(
 
         val project: Projects = getProject(projectId) ?: return ResponseEntity.badRequest().build()
 
-        val userIdFromToken: UUID = getUserFromToken(token) ?: return ResponseEntity.badRequest().build()
+        val userIdFromToken: UUID = getUserIdFromToken(token) ?: return ResponseEntity.badRequest().build()
 
         if (project.createdUserId == userIdFromToken){
             projectsRepository.delete(project)
@@ -106,7 +128,7 @@ class ProjectsController(
         return projectsList[0]
     }
 
-    private fun getUserFromToken(token: String): UUID?{
+    private fun getUserIdFromToken(token: String): UUID?{
         val tokenList: List<Token> = tokenRepository.findByToken(token)
 
         if (tokenList.isEmpty()) return null

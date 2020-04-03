@@ -1,9 +1,6 @@
 package com.approvers.devlazaApi.repository
 
-import com.approvers.devlazaApi.model.Projects
-import com.approvers.devlazaApi.model.Sites
-import com.approvers.devlazaApi.model.Tags
-import com.approvers.devlazaApi.model.TagsToProjectsBridge
+import com.approvers.devlazaApi.model.*
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 import java.util.*
@@ -12,7 +9,7 @@ import java.util.*
 interface ProjectsRepository: JpaRepository<Projects, String>{
 	fun findById(id:UUID): List<Projects>
 	fun findByNameLike(name: String): List<Projects>
-	fun findByCreatedUserId(id: String): List<Projects>
+	fun findByCreatedUserId(createdUserId: UUID): List<Projects>
 	fun findByRecruiting(status: Int): List<Projects>
 }
 
@@ -29,4 +26,11 @@ interface TagsRepository: JpaRepository<Tags, String>{
 @Repository
 interface TagsToProjectsBridgeRepository: JpaRepository<TagsToProjectsBridge, String>{
 	fun findByProjectId(id: UUID): List<TagsToProjectsBridge>
+}
+
+@Repository
+interface ProjectMemberRepository: JpaRepository<ProjectMember, String>{
+	fun findByUserId(id : UUID): List<ProjectMember>
+	fun findByProjectId(id : UUID): List<ProjectMember>
+	fun findByProjectIdAndUserId(projectId: UUID, userId: UUID): List<ProjectMember>
 }
