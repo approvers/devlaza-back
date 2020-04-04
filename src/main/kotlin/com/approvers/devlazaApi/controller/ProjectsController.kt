@@ -1,9 +1,8 @@
 package com.approvers.devlazaApi.controller
 
 import com.approvers.devlazaApi.controller.utils.*
-import com.approvers.devlazaApi.errorResponses.BadRequest
-import com.approvers.devlazaApi.errorResponses.ErrorContents
-import com.approvers.devlazaApi.errorResponses.NotFound
+import com.approvers.devlazaApi.errorResponses.errors.BadRequest
+import com.approvers.devlazaApi.errorResponses.errors.NotFound
 import com.approvers.devlazaApi.model.*
 import com.approvers.devlazaApi.repository.*
 import org.springframework.http.ResponseEntity
