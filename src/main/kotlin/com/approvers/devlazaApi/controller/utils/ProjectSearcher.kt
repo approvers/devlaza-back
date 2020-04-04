@@ -4,11 +4,12 @@ import com.approvers.devlazaApi.model.Projects
 import com.approvers.devlazaApi.model.TagsToProjectsBridge
 import com.approvers.devlazaApi.repository.ProjectsRepository
 import com.approvers.devlazaApi.repository.TagsToProjectsBridgeRepository
+import com.approvers.devlazaApi.repository.UserRepository
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 
-class ProjectSearcher(private var projects: Set<Projects>, private val projectsRepository: ProjectsRepository, private val tagsToProjectsBridgeRepository: TagsToProjectsBridgeRepository){
+class ProjectSearcher(private var projects: Set<Projects>, private val projectsRepository: ProjectsRepository, private val tagsToProjectsBridgeRepository: TagsToProjectsBridgeRepository, private val userRepository: UserRepository){
 	fun withKeyWord(keyword: String?){
 		if(keyword !is String) return
 
@@ -22,7 +23,13 @@ class ProjectSearcher(private var projects: Set<Projects>, private val projectsR
 
 	fun withUser(username: String?){
 		if(username !is String) return
-		val userResult: Set<Projects> = projectsRepository.findByCreatedUserId("$username").toSet()
+		val createdUserList = userRepository.findByNameLike(username)
+
+		if (createdUserList.isEmpty()) return
+
+		val createdUserID = createdUserList[0].id!!
+
+		val userResult: Set<Projects> = projectsRepository.findByCreatedUserId(createdUserID).toSet()
 		projects = projects.intersect(userResult)
 	}
 
