@@ -1,6 +1,8 @@
 package com.approvers.devlazaApi.controller
 
 import com.approvers.devlazaApi.controller.utils.*
+import com.approvers.devlazaApi.errors.BadRequest
+import com.approvers.devlazaApi.errors.NotFound
 import com.approvers.devlazaApi.model.*
 import com.approvers.devlazaApi.repository.*
 import org.springframework.http.ResponseEntity
@@ -57,7 +59,7 @@ class ProjectsController(
         val projectMemberUtils = ProjectMemberUtils(projectMemberRepository)
         val (userId: UUID, projectId: UUID) = tokenUtils.convertToTokenAndProjectIdMap(token, rawId)?: return ResponseEntity.badRequest().build()
 
-        if (projectMemberUtils.checkProjectMemberExists(userId, projectId)) return ResponseEntity.badRequest().build()
+        if (projectMemberUtils.checkProjectMemberExists(userId, projectId)) throw BadRequest("User has already joined the project.")
 
         val newMember = ProjectMember(
                 userId=userId,
@@ -80,7 +82,7 @@ class ProjectsController(
         val projectMemberUtils = ProjectMemberUtils(projectMemberRepository)
         val (userId: UUID, projectId: UUID) = tokenUtils.convertToTokenAndProjectIdMap(token, rawId)?: return ResponseEntity.badRequest().build()
 
-        if (!projectMemberUtils.checkProjectMemberExists(userId, projectId)) return ResponseEntity.notFound().build()
+        if (!projectMemberUtils.checkProjectMemberExists(userId, projectId)) throw NotFound("User doesn't join the project")
 
         val projectMember: ProjectMember = projectMemberUtils.getProjectMember(userId, projectId)[0]
 
