@@ -58,6 +58,38 @@ If you wanna set some sites and tags, you must divide it `+`.
 
 Sites format is `title,url`
 
-### Get Project Info
-GET `http://localhost:8080/project/`
+### Get all projects
+GET `http://localhost:8080/projects/`
 
+### Get Project Info
+GET `http://localhost:8080/projects/<id>`
+\<id> is project id.
+
+### Search project with some parameters
+GET `http://localhost:8080/projects/contidion`  
+query
+- keyword: String
+- user: String
+- tags: String
+- sort: String(asc|desc|popular)
+- recruiting: Int(1: open 0: close 2: both)
+- searchStartDate: String(LocalDate)
+- searchEndDate: String(LocalDate)
+
+### Join to project
+PATCH `http://localhost:8080/projects/join/<id>`  
+\<id> is project id.  
+query
+- token: String
+
+### Leave from project
+DELETE `http://localhost:8080/projects/leave/<id>`  
+\<id> is project id.  
+query
+- token:String
+
+### Delete project
+DELETE `http://localhost:8080/projects/<id>`  
+\<id> is project id.
+query
+- token:String
