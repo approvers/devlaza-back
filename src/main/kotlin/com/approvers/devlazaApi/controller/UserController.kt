@@ -12,7 +12,6 @@ import org.springframework.mail.SimpleMailMessage
 import org.springframework.web.bind.annotation.*
 import java.util.*
 import javax.validation.Valid
-import kotlin.math.log
 
 @RestController
 @RequestMapping("/users")
@@ -57,7 +56,7 @@ class UserController(private val userRepository: UserRepository, private val mai
 
         val newUser = User(
                 name=userPoster.name,
-                passWord=userPoster.passWord,
+                passWord=userPoster.password,
                 showId=userPoster.showId,
                 mailAddress=userPoster.mailAddress
         )

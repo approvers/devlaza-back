@@ -52,7 +52,7 @@ data class MailToken(
 
 data class UserPoster(
 		var name: String,
-		var passWord: String,
+		var password: String,
 		var showId: String,
 		@Email var mailAddress: String
 )
