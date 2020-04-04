@@ -1,21 +1,21 @@
-#Devlaza API
+# Devlaza API
 
 ## Overview
-This API for devlaza.  
+An API for devlaza.
 
 ## How to boot server
-First, you have to execute to boot server this command.  
+First, You need to execute the command shown below to boot the API server.
 ```bash
 docker-compose up -d
 ```
 
-Next, set mail auth info.
+Then, set mail auth info.
 ```bash
 export MAILADDRESS=${Your mail account address.}
 export PASSWORD=${Your mail account password.}
 ```
 
-Final, you execute this command on project root directory.
+Finally, execute this command on the project root directory.
 
 ```bash
 ./gradlew bootRun
@@ -31,7 +31,7 @@ POST `http://localhost:8080/users/new`
 - showId: String
 - mailAddress: String
 
-Then you can receive mail from `${MAILADDRESS}`  
+You will receive mail from `${MAILADDRESS}` to check if the email is valid or not.
 
 ### Login
 POST `http://localhost:8080/users/login`  
@@ -39,7 +39,7 @@ POST `http://localhost:8080/users/login`
 - address: String
 - password: String
 
-If you authentication succeeded, you can get login token.
+If you succeed in authentication, you will get a login token.
 
 ### Get user info
 GET `http://localhost:8080/users/<id>`  
@@ -54,9 +54,9 @@ POST `http://localhost:8080/projects/` <= Don't forget last `/`!!!
 - sites: String
 - tags: String
 
-If you wanna set some sites and tags, you must divide it `+`.
+If you want to specify multiple sites and tags, they need to be separated by `+`.
 
-Sites format is `title,url`
+Format of sites is `title,url`
 
 ### Get all projects
 GET `http://localhost:8080/projects/`
