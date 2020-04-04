@@ -14,9 +14,7 @@ class SitesUtils(
 		val sites: MutableList<List<String>> = mutableListOf()
 
 		for (rawSite in dividedRawSites){
-			val colonIndex: Int = rawSite.indexOf("-:-")
-			if (colonIndex == -1) continue
-			val site: List<String> = rawSite.split("-:-")
+			val site: List<String> = rawSite.split(",")
 			sites.add(site)
 		}
 		return sites
