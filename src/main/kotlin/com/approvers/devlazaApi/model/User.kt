@@ -61,3 +61,7 @@ data class LoginPoster(
 		var address: String,
 		var password: String
 )
+
+data class AuthPoster(
+		var token: String
+)

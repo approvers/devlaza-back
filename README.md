@@ -93,3 +93,8 @@ DELETE `http://localhost:8080/projects/<id>`
 \<id> is project id.
 query
 - token:String
+
+### GetUserInfoWithToken
+POST `http://localhost:8080/auth/`  
+query
+- token:String
