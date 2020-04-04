@@ -1,5 +1,6 @@
-package com.approvers.devlazaApi.errorResponses
+package com.approvers.devlazaApi.errors
 
+import com.approvers.devlazaApi.errors.ErrorContents
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
