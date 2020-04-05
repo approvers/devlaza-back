@@ -19,7 +19,7 @@ class UserController(
         private val userRepository: UserRepository,
         private val mailTokenRepository: MailTokenRepository,
         private val tokenRepository: TokenRepository,
-        @Autowired private var sender: MailSender
+        @Autowired private val sender: MailSender
 ){
     private val charPool:List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
     @GetMapping("/")
