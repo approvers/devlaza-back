@@ -15,10 +15,13 @@ import javax.validation.Valid
 
 @RestController
 @RequestMapping("/users")
-class UserController(private val userRepository: UserRepository, private val mailTokenRepository: MailTokenRepository, private val tokenRepository: TokenRepository){
+class UserController(
+        private val userRepository: UserRepository,
+        private val mailTokenRepository: MailTokenRepository,
+        private val tokenRepository: TokenRepository,
+        @Autowired private val sender: MailSender
+){
     private val charPool:List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
-    @Autowired
-    private lateinit var sender: MailSender
     @GetMapping("/")
     fun getAllUsers(): List<User> = userRepository.findAll()
 
