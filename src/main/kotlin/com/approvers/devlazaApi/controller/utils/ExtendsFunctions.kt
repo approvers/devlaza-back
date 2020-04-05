@@ -1,4 +1,4 @@
-package com.approvers.devlazaApi.controller
+package com.approvers.devlazaApi.controller.utils
 
 import com.approvers.devlazaApi.errors.BadRequest
 import com.approvers.devlazaApi.errors.NotFound
@@ -25,11 +25,7 @@ fun String.toUUID():UUID{
 fun String?.divideToTags(): List<String>{
     val tags: MutableList<String> = this.getTags() ?: return listOf()
 
-    while (tags.indexOf("") != -1){
-        tags.removeAt(tags.indexOf(""))
-    }
-
-    return tags.toList()
+    return tags.filterNot { it.isEmpty() }
 }
 
 fun String?.getTags(): MutableList<String>?{
@@ -46,7 +42,7 @@ fun String?.getTags(): MutableList<String>?{
 }
 
 fun TokenRepository.getUserIdFromToken(token: String): UUID{
-    val checkedToken: Token = this.tokenCheck(token)
+    val checkedToken: Token = this.checkToken(token)
     return checkedToken.userId
 }
 
@@ -73,12 +69,22 @@ fun TagsToProjectsBridgeRepository.addTagToProject(rawTags: String, projectId: U
     }
 }
 
-fun ProjectMemberRepository.getProjectMember(userId: UUID, projectId: UUID): MutableList<ProjectMember>{
-    val projectMemberList: List<ProjectMember> =  this.findAll()
-    val result: MutableList<ProjectMember> = mutableListOf()
+fun ProjectMemberRepository.getProjectMember(userId: UUID, projectId: UUID): ProjectMember{
+    val projectMemberSetWithUserId: Set<ProjectMember> = this.findByUserId(userId).toSet()
+    val projectMemberSetWithProjectId: Set<ProjectMember> = this.findByProjectId(projectId).toSet()
 
-    for (projectMember in projectMemberList){
-        if (projectId == projectMember.projectId && userId == projectMember.userId) result.add(projectMember)
+    val getResultList: List<ProjectMember> = projectMemberSetWithProjectId.intersect(projectMemberSetWithUserId).toList()
+
+    if (getResultList.isEmpty()) throw NotFound("No project members were found for the given information")
+
+    return getResultList[0]
+}
+
+fun ProjectMemberRepository.checkProjectMemberExist(userId: UUID, projectId: UUID): Boolean{
+    return try {
+        this.getProjectMember(userId, projectId)
+        true
+    }catch (e: NotFound){
+        false
     }
-    return result
 }
