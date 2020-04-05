@@ -34,7 +34,7 @@ class SitesController(private val sitesRepository: SitesRepository){
         return ResponseEntity.notFound().build()
     }
     fun saveSites(rawSites: String?, projectId: UUID){
-        val sites: MutableList<Map<String, String>> = rawSites.divideToSites()
+        val sites: List<Map<String, String>> = rawSites.divideToSites()
 
         for (site in sites) {
             createNewSite(
@@ -46,7 +46,7 @@ class SitesController(private val sitesRepository: SitesRepository){
             )
         }
     }
-    private fun String?.divideToSites(): MutableList<Map<String, String>>{
+    private fun String?.divideToSites(): List<Map<String, String>>{
         if (this !is String) return mutableListOf(mutableMapOf())
         val rawSites: List<String> = this.split("+")
         val sites: MutableList<Map<String, String>> = mutableListOf()
@@ -60,6 +60,6 @@ class SitesController(private val sitesRepository: SitesRepository){
                     )
             )
         }
-        return sites
+        return sites.toList()
     }
 }
