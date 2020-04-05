@@ -34,22 +34,32 @@ class SitesController(private val sitesRepository: SitesRepository){
         return ResponseEntity.notFound().build()
     }
     fun saveSites(rawSites: String?, projectId: UUID){
-        val sites: List<List<String>> = rawSites.divideToSites()
+        val sites: MutableList<Map<String, String>> = rawSites.divideToSites()
 
         for (site in sites) {
             createNewSite(
                     SitesPoster(
-                            explanation = site[0],
-                            url = site[1],
+                            explanation = site["explanation"]!!,
+                            url = site["url"]!!,
                             projectId = projectId
                     )
             )
         }
     }
-    private fun String?.divideToSites(): List<List<String>>{
-        if (this !is String) return listOf()
-        return this.split("+")
-                .map { it.split(",") }
-    }
+    private fun String?.divideToSites(): MutableList<Map<String, String>>{
+        if (this !is String) return mutableListOf(mutableMapOf())
+        val rawSites: List<String> = this.split("+")
+        val sites: MutableList<Map<String, String>> = mutableListOf()
 
+        for (site in rawSites){
+            val tmp: List<String> = site.split(",")
+            sites.add(
+                    mutableMapOf(
+                            "explanation" to tmp[0],
+                            "url" to tmp[1]
+                    )
+            )
+        }
+        return sites
+    }
 }
