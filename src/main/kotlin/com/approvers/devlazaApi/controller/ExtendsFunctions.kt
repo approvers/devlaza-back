@@ -50,7 +50,7 @@ fun TokenRepository.getUserIdFromToken(token: String): UUID{
     return checkedToken.userId
 }
 
-fun TokenRepository.tokenCheck(token: String): Token{
+fun TokenRepository.checkToken(token: String): Token{
     val tokenList: List<Token> = this.findByToken(token)
     if (tokenList.isEmpty()) throw NotFound("This token is invalid")
     return tokenList[0]
