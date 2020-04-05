@@ -12,7 +12,7 @@ import com.approvers.devlazaApi.repository.TagsToProjectsBridgeRepository
 import com.approvers.devlazaApi.repository.TokenRepository
 import java.util.*
 
-fun String.convertToUUID():UUID{
+fun String.toUUID():UUID{
     val id: UUID
     try{
         id = UUID.fromString(this)
@@ -82,4 +82,3 @@ fun ProjectMemberRepository.getProjectMember(userId: UUID, projectId: UUID): Mut
     }
     return result
 }
-
