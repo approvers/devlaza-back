@@ -1,5 +1,7 @@
 package com.approvers.devlazaApi.controller
 
+import com.approvers.devlazaApi.errors.BadRequest
+import com.approvers.devlazaApi.errors.NotFound
 import com.approvers.devlazaApi.model.Sites
 import com.approvers.devlazaApi.model.SitesPoster
 import com.approvers.devlazaApi.repository.SitesRepository
@@ -32,11 +34,11 @@ class SitesController(private val sitesRepository: SitesRepository){
         try {
             projectId = UUID.fromString(rawId)
         }catch (e: IllegalArgumentException){
-            return ResponseEntity.badRequest().build()
+            throw BadRequest("The format of the given ID is abnormal")
         }
         val sitesList = sitesRepository.findByProjectId(projectId)
         if (sitesList.isNotEmpty()) return ResponseEntity.ok(sitesList.toList())
-        return ResponseEntity.notFound().build()
+        throw NotFound("No project corresponding to ID was found")
     }
     fun saveSites(rawSites: String?, projectId: UUID){
         val sites: List<Map<String, String>> = rawSites.divideToSites()

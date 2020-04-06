@@ -125,7 +125,7 @@ class ProjectsController(
 
         val projectsList: List<Projects> = searchProject.getResult()
 
-        if (projectsList.isEmpty()) return ResponseEntity.notFound().build()
+        if (projectsList.isEmpty()) throw NotFound("No projects match your search criteria")
         return ResponseEntity.ok(projectsList)
     }
 
@@ -133,7 +133,7 @@ class ProjectsController(
     fun getProjectById(@PathVariable(value="id", required=true) rawId: String): ResponseEntity<Projects>{
         val projectId: UUID = rawId.toUUID()
 
-        val project: Projects =  getProject(projectId)?: return ResponseEntity.badRequest().build()
+        val project: Projects =  getProject(projectId)?: throw BadRequest("")
 
         return ResponseEntity.ok(project)
     }
@@ -142,7 +142,7 @@ class ProjectsController(
     fun deleteProject(@PathVariable(value="id", required=true) rawId: String, @RequestParam(name="token", required=true) token: String): ResponseEntity<String>{
         val projectId: UUID = rawId.toUUID()
 
-        val project: Projects = getProject(projectId) ?: return ResponseEntity.badRequest().build()
+        val project: Projects = getProject(projectId) ?: throw BadRequest("Project not found")
 
         val userIdFromToken: UUID = tokenRepository.getUserIdFromToken(token)
 
@@ -150,7 +150,7 @@ class ProjectsController(
             projectsRepository.delete(project)
             return ResponseEntity.noContent().build()
         }
-        return ResponseEntity.badRequest().build()
+        throw BadRequest("The user does not created the project")
     }
 
     private fun getProject(projectId: UUID): Projects?{
