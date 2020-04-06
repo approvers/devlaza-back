@@ -1,13 +1,18 @@
 package com.approvers.devlazaApi.controller
 
+// 大量の拡張関数があるので*でimport
 import com.approvers.devlazaApi.controller.utils.*
+//大量に使っているので*import
+import org.springframework.web.bind.annotation.*
+//大量に使っているので*import
+import com.approvers.devlazaApi.model.*
+//大量に使っているので*import
+import com.approvers.devlazaApi.repository.*
+
 import com.approvers.devlazaApi.errors.BadRequest
 import com.approvers.devlazaApi.errors.NotFound
-import com.approvers.devlazaApi.model.*
-import com.approvers.devlazaApi.repository.*
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.*
-import java.util.*
+import java.util.UUID
 import javax.validation.Valid
 
 @RestController
@@ -148,9 +153,7 @@ class ProjectsController(
 
     private fun getProject(projectId: UUID): Projects?{
         val projectsList: List<Projects> = projectsRepository.findById(projectId)
-        if (projectsList.isEmpty()) return null
-        return projectsList[0]
+        return projectsList.singleOrNull()
     }
-
 }
 

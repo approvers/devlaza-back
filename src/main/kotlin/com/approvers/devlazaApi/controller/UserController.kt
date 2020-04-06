@@ -1,6 +1,9 @@
 package com.approvers.devlazaApi.controller
 
+//大量に使っているので*import
 import com.approvers.devlazaApi.model.*
+//大量に使っているので*import
+import org.springframework.web.bind.annotation.*
 import com.approvers.devlazaApi.repository.MailTokenRepository
 import com.approvers.devlazaApi.repository.TokenRepository
 import com.approvers.devlazaApi.repository.UserRepository
@@ -9,8 +12,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.mail.MailException
 import org.springframework.mail.MailSender
 import org.springframework.mail.SimpleMailMessage
-import org.springframework.web.bind.annotation.*
-import java.util.*
+import java.util.UUID
 import javax.validation.Valid
 
 @RestController
