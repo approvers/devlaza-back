@@ -16,12 +16,14 @@ import org.springframework.web.bind.annotation.PostMapping
 import com.approvers.devlazaApi.repository.MailTokenRepository
 import com.approvers.devlazaApi.repository.TokenRepository
 import com.approvers.devlazaApi.repository.UserRepository
+import com.auth0.jwt.JWT
+import com.auth0.jwt.algorithms.Algorithm
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
 import org.springframework.mail.MailException
 import org.springframework.mail.MailSender
 import org.springframework.mail.SimpleMailMessage
-import java.util.UUID
+import java.util.*
 import javax.validation.Valid
 
 @RestController
@@ -32,6 +34,7 @@ class UserController(
         private val tokenRepository: TokenRepository,
         @Autowired private val sender: MailSender
 ){
+    private val secret: String = System.getenv("secret") ?: "secret"
     private val charPool:List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
     @GetMapping("/")
     fun getAllUsers():List<User> = userRepository.findAll()
@@ -71,12 +74,14 @@ class UserController(
         )
 
         var token: String
+
+        userRepository.save(newUser)
+
         while (true){
-            token = createToken()
+            token = createToken(newUser.name, newUser.id!!)
             if (mailTokenRepository.findByToken(token).isEmpty()) break
         }
 
-        userRepository.save(newUser)
 
         val mailToken = MailToken(
                 token=token,
@@ -96,11 +101,6 @@ class UserController(
         return ResponseEntity.ok(newUser)
     }
 
-    fun createToken() = (1..32)
-                    .map { kotlin.random.Random.nextInt(0, charPool.size) }
-                    .map(charPool::get)
-                    .joinToString("")
-
     @PostMapping("/login")
     fun login(
             @Valid @RequestBody loginPoster: LoginPoster
@@ -111,20 +111,36 @@ class UserController(
         val user: User = userList[0]
         val userId: UUID? = user.id
 
-		if (user.mailAuthorized == 0) throw BadRequest("The email address is not authenticated")
+        if (user.mailAuthorized == 0) throw BadRequest("The email address is not authenticated")
 
         if (user.passWord != loginPoster.password) throw BadRequest("Password invalid")
 
         if (userId is UUID){
-            var token: String
-            while (true) {
-                token = createToken()
-                if (tokenRepository.findByToken(token).isEmpty()) break
-            }
+            val token: String = createToken(user.name, user.id!!)
             val generatedToken = Token(token=token, userId=userId)
             tokenRepository.save(generatedToken)
             return ResponseEntity.ok(token)
         }
         throw NotFound("Could not find user id")
+    }
+
+    private fun createToken() = (1..32)
+            .map { kotlin.random.Random.nextInt(0, charPool.size) }
+            .map(charPool::get)
+            .joinToString("")
+
+
+
+    private fun createToken(userName: String, userId: UUID): String{
+        val issuedAt = Date()
+        val algorithm: Algorithm = Algorithm.HMAC256(secret)
+        val id: UUID = UUID.randomUUID()
+        return JWT.create()
+                .withIssuer("Approvers")
+                .withIssuedAt(issuedAt)
+                .withJWTId(id.toString())
+                .withClaim("USER_ID", userId.toString())
+                .withClaim("USER_name", userName)
+                .sign(algorithm)
     }
 }
