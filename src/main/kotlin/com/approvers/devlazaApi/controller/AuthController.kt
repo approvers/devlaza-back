@@ -3,9 +3,7 @@ package com.approvers.devlazaApi.controller
 import com.approvers.devlazaApi.errors.BadRequest
 import com.approvers.devlazaApi.errors.NotFound
 import com.approvers.devlazaApi.model.AuthPoster
-import com.approvers.devlazaApi.model.Token
 import com.approvers.devlazaApi.model.User
-import com.approvers.devlazaApi.repository.TokenRepository
 import com.approvers.devlazaApi.repository.UserRepository
 import com.auth0.jwt.JWT
 import com.auth0.jwt.JWTVerifier
@@ -23,31 +21,19 @@ import javax.validation.Valid
 @RestController
 @RequestMapping("/auth")
 class AuthController(
-        private val tokenRepository: TokenRepository,
         private val userRepository: UserRepository
 ) {
     @PostMapping("/")
     fun getUserInfo(@Valid @RequestBody authPoster: AuthPoster): User {
         val token: String = authPoster.token
 
-        val userId: UUID = tokenRepository.getUserIdFromToken(token)
+        val userId: UUID = decode(token)
 
         val tmp: List<User> = userRepository.findById(userId)
 
         if (tmp.isEmpty()) throw NotFound("No users were found for that token")
 
         return tmp[0]
-    }
-
-    private fun TokenRepository.getUserIdFromToken(token: String): UUID{
-        val checkedToken: Token = this.checkToken(token)
-        return checkedToken.userId
-    }
-
-    private fun TokenRepository.checkToken(token: String): Token{
-        val tokenList: List<Token> = this.findByToken(token)
-        if (tokenList.isEmpty()) throw NotFound("This token is invalid")
-        return tokenList[0]
     }
 
     private val secret: String = System.getenv("secret") ?: "secret"

@@ -23,13 +23,6 @@ data class User(
 )
 
 @Entity
-data class Token(
-        @Column(name="token") var token: String,
-        @Column(name="userId") var userId:UUID,
-        @Id @GeneratedValue(generator="uuid2") @GenericGenerator(name="uuid2", strategy="uuid2") @Column(columnDefinition="BINARY(16)") var id: UUID? = null
-)
-
-@Entity
 data class DevelopExp(
         @Id @GeneratedValue(generator="uuid2") @GenericGenerator(name="uuid2", strategy="uuid2") @Column(columnDefinition="BINARY(16)") var id: UUID? = null,
         @Column(name="userId") var userId: UUID,
