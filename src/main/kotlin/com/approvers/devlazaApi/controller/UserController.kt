@@ -1,11 +1,18 @@
 package com.approvers.devlazaApi.controller
 
-//大量に使っているので*import
 import com.approvers.devlazaApi.errors.BadRequest
 import com.approvers.devlazaApi.errors.NotFound
-import com.approvers.devlazaApi.model.*
-//大量に使っているので*import
-import org.springframework.web.bind.annotation.*
+import com.approvers.devlazaApi.model.User
+import com.approvers.devlazaApi.model.MailToken
+import com.approvers.devlazaApi.model.UserPoster
+import com.approvers.devlazaApi.model.LoginPoster
+import com.approvers.devlazaApi.model.Token
+import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
 import com.approvers.devlazaApi.repository.MailTokenRepository
 import com.approvers.devlazaApi.repository.TokenRepository
 import com.approvers.devlazaApi.repository.UserRepository

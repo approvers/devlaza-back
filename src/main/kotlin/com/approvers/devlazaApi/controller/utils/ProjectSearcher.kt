@@ -7,7 +7,7 @@ import com.approvers.devlazaApi.repository.TagsToProjectsBridgeRepository
 import com.approvers.devlazaApi.repository.UserRepository
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.*
+import java.util.UUID
 
 class ProjectSearcher(private var projects: Set<Projects>, private val projectsRepository: ProjectsRepository, private val tagsToProjectsBridgeRepository: TagsToProjectsBridgeRepository, private val userRepository: UserRepository){
 	fun withKeyWord(keyword: String?){
