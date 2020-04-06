@@ -30,7 +30,7 @@ class ProjectsController(
     fun getAllProjects(): List<Projects> = projectsRepository.findAll()
 
     @PostMapping("/")
-    fun createNewProject(@Valid @RequestBody rawData: ProjectPoster): Projects{
+    fun createNewProject(@Valid @RequestBody rawData: ProjectPoster): ResponseEntity<Projects>{
         val token: Token = tokenRepository.checkToken(rawData.token)
         val projects = Projects(
                 name = rawData.name,
@@ -44,14 +44,15 @@ class ProjectsController(
 
         tagsToProjectsBridgeRepository.addTagToProject(rawData.tags, projects.id!!, tagsRepository)
 
-        return projects
+        return ResponseEntity.ok(projects)
     }
 
-    @PatchMapping("/join/{id}")
+    @PostMapping("/{id}/join")
     fun joinToProject(
-            @RequestParam(name="token", defaultValue="") token: String,
+            @Valid @RequestBody tokenPoster: TokenPoster,
             @PathVariable(value="id") rawId: String
-    ): ResponseEntity<String>{
+    ): ResponseEntity<Unit>{
+        val token: String = tokenPoster.token
         val userId: UUID = tokenRepository.getUserIdFromToken(token)
 
         val projectId: UUID = rawId.toUUID()
@@ -66,14 +67,16 @@ class ProjectsController(
                 projectId=projectId
         )
         projectMemberRepository.save(newMember)
-        return ResponseEntity.ok("Joined")
+        return ResponseEntity.ok().build()
     }
 
-    @DeleteMapping("/leave/{id}")
+    data class TokenPoster(val token: String)
+
+    @DeleteMapping("/{id}/leave")
     fun leaveFromProject(
             @RequestParam(name="token", defaultValue="") token: String,
             @PathVariable(value="id") rawId: String
-    ): ResponseEntity<String>{
+    ): ResponseEntity<Unit> {
         val userId: UUID = tokenRepository.getUserIdFromToken(token)
 
         val projectId: UUID = rawId.toUUID()
@@ -85,10 +88,10 @@ class ProjectsController(
 
         val projectCreatorId: UUID = projectsRepository.findById(projectId)[0].createdUserId!!
 
-        if (projectCreatorId == userId) return ResponseEntity.badRequest().body("Project created user can't leave from project")
+        if (projectCreatorId == userId) throw BadRequest("Project created user can't leave from project")
 
         projectMemberRepository.delete(projectMember)
-        return ResponseEntity.ok("Deleted!")
+        return ResponseEntity.noContent().build()
     }
 
     // TODO: tag検索と時間での絞り込みの実装、Userテーブルとの連携
@@ -145,11 +148,10 @@ class ProjectsController(
 
         if (project.createdUserId == userIdFromToken){
             projectsRepository.delete(project)
-            return ResponseEntity.ok("Deleted")
+            return ResponseEntity.noContent().build()
         }
         return ResponseEntity.badRequest().build()
     }
-
 
     private fun getProject(projectId: UUID): Projects?{
         val projectsList: List<Projects> = projectsRepository.findById(projectId)
