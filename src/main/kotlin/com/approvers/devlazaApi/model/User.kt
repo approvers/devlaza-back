@@ -2,7 +2,7 @@ package com.approvers.devlazaApi.model
 
 import org.hibernate.annotations.GenericGenerator
 import java.time.LocalDateTime
-import java.util.*
+import java.util.UUID
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue
