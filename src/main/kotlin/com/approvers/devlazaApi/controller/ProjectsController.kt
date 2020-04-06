@@ -26,11 +26,7 @@ class ProjectsController(
 
     @PostMapping("/")
     fun createNewProject(@Valid @RequestBody rawData: ProjectPoster): Projects{
-        val tagsUtils = TagsUtils(tagsRepository, tagsToProjectsBridgeRepository)
-        val tokenUtils = TokenUtils(tokenRepository, userRepository, projectsRepository)
-        val sitesUtils = SitesUtils(sitesController)
-
-        val token: Token = tokenUtils.tokenCheck(rawData.token) ?: return Projects(name="invalid token", introduction="")
+        val token: Token = tokenRepository.checkToken(rawData.token)
         val projects = Projects(
                 name = rawData.name,
                 introduction = rawData.introduction,
@@ -39,9 +35,9 @@ class ProjectsController(
 
         projectsRepository.save(projects)
 
-        sitesUtils.saveSites(rawData.sites, projects.id!!)
+        sitesController.saveSites(rawData.sites, projects.id!!)
 
-        tagsUtils.saveTags(rawData.tags, projects.id!!)
+        tagsToProjectsBridgeRepository.addTagToProject(rawData.tags, projects.id!!, tagsRepository)
 
         return projects
     }
@@ -51,15 +47,14 @@ class ProjectsController(
             @RequestParam(name="token", defaultValue="") token: String,
             @PathVariable(value="id") rawId: String
     ): ResponseEntity<String>{
-        val tokenUtils = TokenUtils(
-                tokenRepository,
-                userRepository,
-                projectsRepository
-        )
-        val projectMemberUtils = ProjectMemberUtils(projectMemberRepository)
-        val (userId: UUID, projectId: UUID) = tokenUtils.convertToTokenAndProjectIdMap(token, rawId)?: return ResponseEntity.badRequest().build()
+        val userId: UUID = tokenRepository.getUserIdFromToken(token)
 
-        if (projectMemberUtils.checkProjectMemberExists(userId, projectId)) throw BadRequest("User has already joined the project.")
+        val projectId: UUID = rawId.toUUID()
+
+        if (userRepository.findById(userId).isEmpty()) throw NotFound("User with given token does not exist")
+        if (projectsRepository.findById(projectId).isEmpty()) throw NotFound("Project with given token does not exists")
+
+        if (projectMemberRepository.checkProjectMemberExist(userId, projectId)) throw BadRequest("User already join to this project")
 
         val newMember = ProjectMember(
                 userId=userId,
@@ -74,17 +69,14 @@ class ProjectsController(
             @RequestParam(name="token", defaultValue="") token: String,
             @PathVariable(value="id") rawId: String
     ): ResponseEntity<String>{
-        val tokenUtils = TokenUtils(
-                tokenRepository,
-                userRepository,
-                projectsRepository
-        )
-        val projectMemberUtils = ProjectMemberUtils(projectMemberRepository)
-        val (userId: UUID, projectId: UUID) = tokenUtils.convertToTokenAndProjectIdMap(token, rawId)?: return ResponseEntity.badRequest().build()
+        val userId: UUID = tokenRepository.getUserIdFromToken(token)
 
-        if (!projectMemberUtils.checkProjectMemberExists(userId, projectId)) throw NotFound("User doesn't join the project")
+        val projectId: UUID = rawId.toUUID()
 
-        val projectMember: ProjectMember = projectMemberUtils.getProjectMember(userId, projectId)[0]
+        if (userRepository.findById(userId).isEmpty()) throw NotFound("User with given token does not exist")
+        if (projectsRepository.findById(projectId).isEmpty()) throw NotFound("Project with given token does not exists")
+
+        val projectMember: ProjectMember = projectMemberRepository.getProjectMember(userId, projectId)
 
         val projectCreatorId: UUID = projectsRepository.findById(projectId)[0].createdUserId!!
 
@@ -102,18 +94,13 @@ class ProjectsController(
             @RequestParam(name="user", defaultValue="#{null}") user:String?,
             @RequestParam(name="tags", defaultValue="#{null}") rawTags: String?,
             @RequestParam(name="sort", defaultValue="asc") sortOrder: String,
-            @RequestParam(name="recruiting", defaultValue="1") rawRecruiting: String?,
+            @RequestParam(name="recruiting", defaultValue="1") rawRecruiting: String,
             @RequestParam(name="searchStartDate", defaultValue="#{null}") searchStart: String?,
             @RequestParam(name="searchEndDate", defaultValue="#{null}") searchEnd: String?
     ): ResponseEntity<List<Projects>>{
-        val tagsUtils = TagsUtils(tagsRepository, tagsToProjectsBridgeRepository)
+        val recruiting: Int = rawRecruiting.toIntOrNull() ?: 1
 
-        val recruiting: Int = if(rawRecruiting != null && rawRecruiting.toIntOrNull() != null) {
-            rawRecruiting.toInt()
-        }else{
-            1
-        }
-        val tags: List<String> = tagsUtils.divideTags(rawTags)
+        val tags: List<String> = rawTags.divideToTags()
 
         val searchProject = ProjectSearcher(
                 projectsRepository.findAll().toSet(),
@@ -135,9 +122,8 @@ class ProjectsController(
     }
 
     @GetMapping("/{id}")
-    fun getProjectById(@PathVariable(value="id") rawId: String?): ResponseEntity<Projects>{
-        val util = BaseUtils()
-        val projectId: UUID = util.convertStringToUUID(rawId) ?: return ResponseEntity.badRequest().build()
+    fun getProjectById(@PathVariable(value="id", required=true) rawId: String): ResponseEntity<Projects>{
+        val projectId: UUID = rawId.toUUID()
 
         val project: Projects =  getProject(projectId)?: return ResponseEntity.badRequest().build()
 
@@ -145,15 +131,12 @@ class ProjectsController(
     }
 
     @DeleteMapping("/{id}")
-    fun deleteProject(@PathVariable(value="id") rawId: String?, @RequestParam(name="token", required=true) token: String): ResponseEntity<String>{
-        val tokenUtils = TokenUtils(tokenRepository, userRepository, projectsRepository)
-        val util = BaseUtils()
-
-        val projectId: UUID = util.convertStringToUUID(rawId) ?: return ResponseEntity.badRequest().build()
+    fun deleteProject(@PathVariable(value="id", required=true) rawId: String, @RequestParam(name="token", required=true) token: String): ResponseEntity<String>{
+        val projectId: UUID = rawId.toUUID()
 
         val project: Projects = getProject(projectId) ?: return ResponseEntity.badRequest().build()
 
-        val userIdFromToken: UUID = tokenUtils.getUserIdFromToken(token) ?: return ResponseEntity.badRequest().build()
+        val userIdFromToken: UUID = tokenRepository.getUserIdFromToken(token)
 
         if (project.createdUserId == userIdFromToken){
             projectsRepository.delete(project)
