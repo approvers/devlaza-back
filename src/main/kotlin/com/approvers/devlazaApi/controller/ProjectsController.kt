@@ -1,7 +1,11 @@
 package com.approvers.devlazaApi.controller
 
 
-import com.approvers.devlazaApi.controller.utils.ProjectSearcher
+import com.approvers.devlazaApi.controller.search.project.SearchWithKeyword
+import com.approvers.devlazaApi.controller.search.project.SearchWithUser
+import com.approvers.devlazaApi.controller.search.project.SearchWithTags
+import com.approvers.devlazaApi.controller.search.project.SearchWithCreatedDate
+import com.approvers.devlazaApi.controller.search.project.SearchWithRecruiting
 import com.approvers.devlazaApi.errors.BadRequest
 import com.approvers.devlazaApi.errors.NotFound
 import com.approvers.devlazaApi.model.ProjectMember
@@ -123,20 +127,15 @@ class ProjectsController(
 
         val tags: List<String> = rawTags.divideToTags()
 
-        val searchProject = ProjectSearcher(
-                projectsRepository.findAll().toSet(),
-                projectsRepository,
-                tagsToProjectsBridgeRepository,
-                userRepository
+        val projectsList: List<Projects> = search(
+                keyword,
+                user,
+                recruiting,
+                tags,
+                searchStart,
+                searchEnd,
+                sortOrder
         )
-        searchProject.withKeyWord(keyword)
-        searchProject.withUser(user)
-        searchProject.withRecruiting(recruiting)
-        searchProject.withTags(tags)
-        searchProject.filterWithCreatedDay(searchStart, searchEnd)
-        searchProject.decideSort(sortOrder)
-
-        val projectsList: List<Projects> = searchProject.getResult()
 
         if (projectsList.isEmpty()) throw NotFound("No projects match your search criteria")
         return ResponseEntity.ok(projectsList)
@@ -245,6 +244,35 @@ class ProjectsController(
         }catch (e: NotFound){
             false
         }
+    }
+
+    private fun search(
+            keyword: String?,
+            userName: String?,
+            recruiting: Int,
+            tags: List<String>,
+            searchStart: String?,
+            searchEnd: String?,
+            sortOrder: String
+    ): List<Projects>{
+        var projects: Set<Projects> = projectsRepository.findAll().toSet()
+        projects = SearchWithKeyword().search(projects, keyword, projectsRepository)
+        projects = SearchWithUser().search(projects, userName, projectsRepository, userRepository)
+        projects = SearchWithTags().search(projects, tags, projectsRepository, tagsToProjectsBridgeRepository)
+        projects = SearchWithRecruiting().search(projects, recruiting, projectsRepository)
+
+        projects = SearchWithCreatedDate().search(projects, listOf(searchStart, searchEnd), projectsRepository)
+
+        val projectsList: MutableList<Projects> = projects.toMutableList()
+        when(sortOrder){
+            "asc" -> projectsList.sortBy{it.created_at}
+            "desc" -> {
+                projectsList.sortBy{it.created_at}
+                projectsList.reverse()
+            }
+            else -> projectsList.sortBy{it.created_at}
+        }
+        return projectsList.toList()
     }
 }
 
