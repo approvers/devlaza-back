@@ -71,7 +71,11 @@ data class TagsToProjectsBridge(
 ): Serializable
 
 @Entity
-@Table(indexes = [Index(name="favorite_index", columnList="USER_ID, PROJECT_ID", unique=true)])
+@Table(indexes = [
+    Index(columnList="user_id, project_id", unique=true),
+    Index(columnList="user_id"),
+    Index(columnList="project_id")
+])
 data class Favorite(
 		@Id @GeneratedValue(generator = "uuid2") @GenericGenerator(name = "uuid2", strategy = "uuid2") @Column(columnDefinition = "BINARY(16)") var id: UUID? = null,
         @Column(name="user_id", nullable = false) var user_id: String,
@@ -79,7 +83,11 @@ data class Favorite(
 )
 
 @Entity
-@Table(indexes = [Index(name="project_member_index", columnList="PROJECT_ID, USER_ID", unique=true)])
+@Table(indexes = [
+    Index(columnList="project_id, user_id", unique=true),
+    Index(columnList="project_id"),
+    Index(columnList="user_id")
+])
 data class ProjectMember(
 		@Id @GeneratedValue(generator = "uuid2") @GenericGenerator(name = "uuid2", strategy = "uuid2") @Column(columnDefinition = "BINARY(16)") var id: UUID? = null,
 		@Column(name="project_id", nullable=false) var projectId: UUID,

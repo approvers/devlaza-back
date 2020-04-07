@@ -70,11 +70,7 @@ class SitesController(private val sitesRepository: SitesRepository){
 
             if (sitesContent in sites) continue
 
-            try{
-                sites.add(sitesContent)
-            }catch (e: IndexOutOfBoundsException){
-                println("warning: url or explanation is null")
-            }
+            sites.add(sitesContent)
         }
         return sites.toList()
     }
