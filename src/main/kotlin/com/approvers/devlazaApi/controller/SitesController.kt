@@ -68,7 +68,7 @@ class SitesController(private val sitesRepository: SitesRepository){
             val tmp: List<String> = site.split(",")
             val sitesContent = DividedSites(explanation = tmp[0], url =  tmp[1])
 
-            if (sites.indexOf(sitesContent) != -1) continue
+            if (sitesContent in sites) continue
 
             try{
                 sites.add(sitesContent)
