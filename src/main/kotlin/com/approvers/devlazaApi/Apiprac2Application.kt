@@ -4,8 +4,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
 @SpringBootApplication
-class DevLazaApiApplication
+class DevlazaApplication
 
 fun main(args: Array<String>) {
-    runApplication<DevLazaApiApplication>(*args)
+    runApplication<DevlazaApplication>(*args)
 }

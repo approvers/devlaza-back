@@ -7,9 +7,12 @@ import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue
 import javax.persistence.Id
+import javax.persistence.Table
+import javax.persistence.Index
 import javax.validation.constraints.Email
 
 @Entity
+@Table(indexes = [Index(columnList="name")])
 data class User(
         @Id @GeneratedValue(generator="uuid2") @GenericGenerator(name="uuid2", strategy="uuid2") @Column(columnDefinition="BINARY(16)") var id: UUID? = null,
         @Column(name="name", nullable=false) var name: String,
@@ -23,24 +26,27 @@ data class User(
 )
 
 @Entity
+@Table(indexes = [Index(columnList="user_id", unique=true)])
 data class DevelopExp(
-        @Id @GeneratedValue(generator="uuid2") @GenericGenerator(name="uuid2", strategy="uuid2") @Column(columnDefinition="BINARY(16)") var id: UUID? = null,
-        @Column(name="userId") var userId: UUID,
-        @Column(name="caption") var caption: String
+		@Id @GeneratedValue(generator="uuid2") @GenericGenerator(name="uuid2", strategy="uuid2") @Column(columnDefinition="BINARY(16)") var id: UUID? = null,
+		@Column(name="user_id") var userId: UUID,
+		@Column(name="caption") var caption: String
 )
 
 @Entity
+@Table(indexes = [Index(columnList="user_id, following_user_id", unique=true)])
 data class Follow(
-        @Id @GeneratedValue(generator="uuid2") @GenericGenerator(name="uuid2", strategy="uuid2") @Column(columnDefinition="BINARY(16)") var id: UUID? = null,
-        @Column(name="userId") var userId: UUID,
-        @Column(name="followingUserId") var followingUserId: UUID
+		@Id @GeneratedValue(generator="uuid2") @GenericGenerator(name="uuid2", strategy="uuid2") @Column(columnDefinition="BINARY(16)") var id: UUID? = null,
+		@Column(name="user_id") var userId: UUID,
+		@Column(name="following_user_id") var followingUserId: UUID
 )
 
 @Entity
+@Table(indexes = [Index(columnList="token", unique=true)])
 data class MailToken(
-        @Id @GeneratedValue(generator="uuid2") @GenericGenerator(name="uuid2", strategy="uuid2") @Column(columnDefinition="BINARY(16)") var id: UUID? = null,
-        @Column(name="userId", nullable=false) var userId: UUID,
-        @Column(name="token", nullable=false) var token: String
+		@Id @GeneratedValue(generator="uuid2") @GenericGenerator(name="uuid2", strategy="uuid2") @Column(columnDefinition="BINARY(16)") var id: UUID? = null,
+		@Column(name="user_id", nullable=false) var userId: UUID,
+		@Column(name="token", nullable=false) var token: String
 )
 
 data class UserPoster(
@@ -56,5 +62,6 @@ data class LoginPoster(
 )
 
 data class AuthPoster(
-        var token: String
+		var token: String
 )
+
