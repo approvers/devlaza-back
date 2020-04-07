@@ -20,12 +20,16 @@ import javax.validation.Valid
 class SitesController(private val sitesRepository: SitesRepository){
     @PostMapping("/add")
     fun createNewSite(@Valid @RequestBody rawData: SitesPoster): Sites{
-        val site = Sites(
+        val newSite = Sites(
                 explanation = rawData.explanation,
                 url = rawData.url,
                 projectId = rawData.projectId
         )
-        return sitesRepository.save(site)
+        for (site in sitesRepository.findByProjectId(rawData.projectId)){
+            if (rawData.url == site.url) throw BadRequest("The site's url is already registered")
+        }
+
+        return sitesRepository.save(newSite)
     }
 
     @GetMapping("/{project_id}")
