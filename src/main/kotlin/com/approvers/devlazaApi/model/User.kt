@@ -52,7 +52,7 @@ data class Follow(
 @Table(indexes = [Index(columnList="token", unique=true)])
 data class MailToken(
 		@Id @GeneratedValue(generator="uuid2") @GenericGenerator(name="uuid2", strategy="uuid2") @Column(columnDefinition="BINARY(16)") var id: UUID? = null,
-		@Column(name="userId", nullable=false) var userId: UUID,
+		@Column(name="user_id", nullable=false) var userId: UUID,
 		@Column(name="token", nullable=false) var token: String
 )
 
