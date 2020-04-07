@@ -41,7 +41,7 @@ data class DevelopExp(
 )
 
 @Entity
-@Table(indexes = [Index(name="follow_index", columnList="USERID, FOLLOWIINGUSERID", unique=true)])
+@Table(indexes = [Index(columnList="USERID, following_user_id", unique=true)])
 data class Follow(
 		@Id @GeneratedValue(generator="uuid2") @GenericGenerator(name="uuid2", strategy="uuid2") @Column(columnDefinition="BINARY(16)") var id: UUID? = null,
 		@Column(name="userId") var userId: UUID,
