@@ -62,12 +62,15 @@ class SitesController(private val sitesRepository: SitesRepository){
 
         for (site in rawSites){
             val tmp: List<String> = site.split(",")
-            sites.add(
-                    DividedSites(
-                            tmp[0],
-                            tmp[1]
-                    )
-            )
+            val sitesContent = DividedSites(explanation = tmp[0], url =  tmp[1])
+
+            if (sites.indexOf(sitesContent) != -1) continue
+
+            try{
+                sites.add(sitesContent)
+            }catch (e: IndexOutOfBoundsException){
+                println("warning: url or explanation is null")
+            }
         }
         return sites.toList()
     }
