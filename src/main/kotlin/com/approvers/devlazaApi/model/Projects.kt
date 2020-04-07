@@ -12,7 +12,10 @@ import javax.persistence.Table
 import javax.persistence.Index
 
 @Entity
-@Table(indexes = [Index(name="projects_index", columnList="NAME, ID, RECRUITING", unique=true)])
+@Table(indexes = [
+    Index(columnList="name"),
+    Index(columnList="recruiting")
+])
 data class Projects(
         @Column(name="name", nullable = false) var name:String,
         @Column(name="introduction") var introduction: String,
@@ -75,4 +78,3 @@ data class ProjectMember(
 		@Column(name="project_id", nullable=false) var projectId: UUID,
 		@Column(name="user_id", nullable=false) var userId: UUID
 )
-
