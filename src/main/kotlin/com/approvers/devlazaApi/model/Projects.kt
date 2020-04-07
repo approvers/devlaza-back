@@ -55,7 +55,7 @@ data class SitesPoster(
 @Table(indexes = [Index(name="tags_index", columnList="NAME", unique=true)])
 data class Tags(
         @Id @GeneratedValue(generator = "uuid2") @GenericGenerator(name = "uuid2", strategy = "uuid2") @Column(columnDefinition = "BINARY(16)") var id: UUID? = null,
-        @Column(name="name", nullable = false) var name: String
+        @Column(name="name", nullable = false, unique=true) var name: String
 ): Serializable
 
 @Entity
