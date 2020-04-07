@@ -9,6 +9,7 @@ plugins {
     kotlin("plugin.jpa") version "1.3.71"
 
     id("org.jlleitschuh.gradle.ktlint") version "9.2.1"
+    id("com.github.unchai.ktlint-github") version "0.0.1"
 }
 
 group = "com.approvers"
@@ -60,4 +61,8 @@ ktlint {
     reporters {
         reporter(ReporterType.CHECKSTYLE)
     }
+}
+
+ktlintGithub {
+    ghRepository = "brokenManager/devlaza-back"
 }
