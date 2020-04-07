@@ -21,4 +21,4 @@ jobs:
             ${{ runner.os }}-gradle-
             ${{ runner.os }}-
       - name: Run build
-        run: ./gradlew build -x ktlintCheck
+        run: ./gradlew build
