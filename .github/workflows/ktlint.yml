@@ -33,11 +33,10 @@ jobs:
           cache-name: cache-gradle-gradlew
         with:
           path: ~/.gradle
-          key:
-            key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts') }}
-            restore-keys: |
-              ${{ runner.os }}-gradle-
-              ${{ runner.os }}-
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+            ${{ runner.os }}-
       - name: Run ktlintCheck
         run: ./gradlew ktlintCheck
       - name: Run Danger
