@@ -34,7 +34,10 @@ data class ProjectPoster(
 )
 
 @Entity
-@Table(indexes = [Index(name="sites_index", columnList="PROJECT_ID, URL", unique=true)])
+@Table(indexes = [
+    Index(columnList="url"),
+    Index(columnList="project_id")
+])
 data class Sites(
         @Column(name="explanation", nullable = false) var explanation: String,
         @Column(name="url", nullable = false) var url: String,
