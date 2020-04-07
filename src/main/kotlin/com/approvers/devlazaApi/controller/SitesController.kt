@@ -20,12 +20,16 @@ import javax.validation.Valid
 class SitesController(private val sitesRepository: SitesRepository){
     @PostMapping("/add")
     fun createNewSite(@Valid @RequestBody rawData: SitesPoster): Sites{
-        val site = Sites(
+        val newSite = Sites(
                 explanation = rawData.explanation,
                 url = rawData.url,
                 projectId = rawData.projectId
         )
-        return sitesRepository.save(site)
+        for (site in sitesRepository.findByProjectId(rawData.projectId)){
+            if (rawData.url == site.url) throw BadRequest("The site's url is already registered")
+        }
+
+        return sitesRepository.save(newSite)
     }
 
     @GetMapping("/{project_id}")
@@ -40,33 +44,39 @@ class SitesController(private val sitesRepository: SitesRepository){
         if (sitesList.isNotEmpty()) return ResponseEntity.ok(sitesList.toList())
         throw NotFound("No project corresponding to ID was found")
     }
+
     fun saveSites(rawSites: String?, projectId: UUID){
-        val sites: List<Map<String, String>> = rawSites.divideToSites()
+        val sites: List<DividedSites> = rawSites.divideToSites()
 
         for (site in sites) {
             createNewSite(
                     SitesPoster(
-                            explanation = site["explanation"]!!,
-                            url = site["url"]!!,
+                            explanation = site.explanation,
+                            url = site.url,
                             projectId = projectId
                     )
             )
         }
     }
-    private fun String?.divideToSites(): List<Map<String, String>>{
-        if (this !is String) return mutableListOf(mutableMapOf())
+
+    private fun String?.divideToSites(): List<DividedSites>{
+        if (this !is String) return listOf()
         val rawSites: List<String> = this.split("+")
-        val sites: MutableList<Map<String, String>> = mutableListOf()
+        val sites: MutableList<DividedSites> = mutableListOf()
 
         for (site in rawSites){
             val tmp: List<String> = site.split(",")
-            sites.add(
-                    mutableMapOf(
-                            "explanation" to tmp[0],
-                            "url" to tmp[1]
-                    )
-            )
+            val sitesContent = DividedSites(explanation = tmp[0], url =  tmp[1])
+
+            if (sitesContent in sites) continue
+
+            sites.add(sitesContent)
         }
         return sites.toList()
     }
+
+    private data class DividedSites(
+            val explanation: String,
+            val url: String
+    )
 }

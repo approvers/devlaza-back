@@ -182,7 +182,7 @@ class ProjectsController(
     }
 
     private fun TagsToProjectsBridgeRepository.addTagToProject(rawTags: String, projectId: UUID, tagsRepository: TagsRepository){
-        val tags: List<String> = rawTags.divideToTags()
+        val tags: List<String> = rawTags.divideToTags().distinct()
 
         for (tag in tags){
             tagsRepository.createNewTag(tag)

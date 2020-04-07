@@ -8,8 +8,14 @@ import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue
 import javax.persistence.Id
+import javax.persistence.Table
+import javax.persistence.Index
 
 @Entity
+@Table(indexes = [
+    Index(columnList="name"),
+    Index(columnList="recruiting")
+])
 data class Projects(
         @Column(name="name", nullable = false) var name:String,
         @Column(name="introduction") var introduction: String,
@@ -28,6 +34,10 @@ data class ProjectPoster(
 )
 
 @Entity
+@Table(indexes = [
+    Index(columnList="url"),
+    Index(columnList="project_id")
+])
 data class Sites(
         @Column(name="explanation", nullable = false) var explanation: String,
         @Column(name="url", nullable = false) var url: String,
@@ -42,12 +52,18 @@ data class SitesPoster(
 )
 
 @Entity
+@Table(indexes = [Index(name="tags_index", columnList="NAME", unique=true)])
 data class Tags(
         @Id @GeneratedValue(generator = "uuid2") @GenericGenerator(name = "uuid2", strategy = "uuid2") @Column(columnDefinition = "BINARY(16)") var id: UUID? = null,
-        @Column(name="name", nullable = false) var name: String
+        @Column(name="name", nullable = false, unique=true) var name: String
 ): Serializable
 
 @Entity
+@Table(indexes = [
+    Index(columnList="project_id, tag_name", unique=true),
+    Index(columnList="project_id"),
+    Index(columnList="tag_name")
+])
 data class TagsToProjectsBridge(
         @Column(name="project_id", nullable = false) var projectId: UUID,
 		@Column(name="tag_name", nullable = false) var tagName: String,
@@ -55,6 +71,11 @@ data class TagsToProjectsBridge(
 ): Serializable
 
 @Entity
+@Table(indexes = [
+    Index(columnList="user_id, project_id", unique=true),
+    Index(columnList="user_id"),
+    Index(columnList="project_id")
+])
 data class Favorite(
 		@Id @GeneratedValue(generator = "uuid2") @GenericGenerator(name = "uuid2", strategy = "uuid2") @Column(columnDefinition = "BINARY(16)") var id: UUID? = null,
         @Column(name="user_id", nullable = false) var user_id: String,
@@ -62,9 +83,13 @@ data class Favorite(
 )
 
 @Entity
+@Table(indexes = [
+    Index(columnList="project_id, user_id", unique=true),
+    Index(columnList="project_id"),
+    Index(columnList="user_id")
+])
 data class ProjectMember(
 		@Id @GeneratedValue(generator = "uuid2") @GenericGenerator(name = "uuid2", strategy = "uuid2") @Column(columnDefinition = "BINARY(16)") var id: UUID? = null,
 		@Column(name="project_id", nullable=false) var projectId: UUID,
 		@Column(name="user_id", nullable=false) var userId: UUID
 )
-
