@@ -40,33 +40,40 @@ class SitesController(private val sitesRepository: SitesRepository){
         if (sitesList.isNotEmpty()) return ResponseEntity.ok(sitesList.toList())
         throw NotFound("No project corresponding to ID was found")
     }
+
     fun saveSites(rawSites: String?, projectId: UUID){
-        val sites: List<Map<String, String>> = rawSites.divideToSites()
+        val sites: List<DividedSites> = rawSites.divideToSites()
 
         for (site in sites) {
             createNewSite(
                     SitesPoster(
-                            explanation = site["explanation"]!!,
-                            url = site["url"]!!,
+                            explanation = site.explanation,
+                            url = site.url,
                             projectId = projectId
                     )
             )
         }
     }
-    private fun String?.divideToSites(): List<Map<String, String>>{
-        if (this !is String) return mutableListOf(mutableMapOf())
+
+    private fun String?.divideToSites(): List<DividedSites>{
+        if (this !is String) return mutableListOf()
         val rawSites: List<String> = this.split("+")
-        val sites: MutableList<Map<String, String>> = mutableListOf()
+        val sites: MutableList<DividedSites> = mutableListOf()
 
         for (site in rawSites){
             val tmp: List<String> = site.split(",")
             sites.add(
-                    mutableMapOf(
-                            "explanation" to tmp[0],
-                            "url" to tmp[1]
+                    DividedSites(
+                            tmp[0],
+                            tmp[1]
                     )
             )
         }
         return sites.toList()
     }
+
+    private data class DividedSites(
+            var explanation: String,
+            val url: String
+    )
 }
