@@ -60,7 +60,7 @@ class SitesController(private val sitesRepository: SitesRepository){
     }
 
     private fun String?.divideToSites(): List<DividedSites>{
-        if (this !is String) return mutableListOf()
+        if (this !is String) return listOf()
         val rawSites: List<String> = this.split("+")
         val sites: MutableList<DividedSites> = mutableListOf()
 
