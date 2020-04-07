@@ -80,7 +80,7 @@ class SitesController(private val sitesRepository: SitesRepository){
     }
 
     private data class DividedSites(
-            var explanation: String,
+            val explanation: String,
             val url: String
     )
 }
