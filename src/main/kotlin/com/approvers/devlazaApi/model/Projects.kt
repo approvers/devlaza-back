@@ -59,7 +59,11 @@ data class Tags(
 ): Serializable
 
 @Entity
-@Table(indexes = [Index(name="tags_to_project_index", columnList="PROJECT_ID, TAG_NAME", unique=true)])
+@Table(indexes = [
+    Index(columnList="project_id, tag_name", unique=true),
+    Index(columnList="project_id"),
+    Index(columnList="tag_name")
+])
 data class TagsToProjectsBridge(
         @Column(name="project_id", nullable = false) var projectId: UUID,
 		@Column(name="tag_name", nullable = false) var tagName: String,
