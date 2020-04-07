@@ -23,6 +23,10 @@ import javax.validation.Valid
 class AuthController(
         private val userRepository: UserRepository
 ) {
+    private val secret: String = System.getenv("secret") ?: "secret"
+    private val algorithm: Algorithm = Algorithm.HMAC256(secret)
+    private val verifier: JWTVerifier = JWT.require(algorithm).build()
+
     @PostMapping("/")
     fun getUserInfo(@Valid @RequestBody authPoster: AuthPoster): User {
         val token: String = authPoster.token
@@ -36,14 +40,10 @@ class AuthController(
         return tmp[0]
     }
 
-    private val secret: String = System.getenv("secret") ?: "secret"
 
     private fun decode(token: String): UUID{
         val userId: UUID
         try{
-            val algorithm: Algorithm = Algorithm.HMAC256(secret)
-            val verifier: JWTVerifier = JWT.require(algorithm).build()
-
             val decodedJWT: DecodedJWT = verifier.verify(token)
 
             userId = UUID.fromString(

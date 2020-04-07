@@ -85,8 +85,6 @@ class UserController(
                 userId= newUser.id!!
         )
 
-        print(token)
-
         mailTokenRepository.save(mailToken)
         val message = SimpleMailMessage()
         message.setFrom("ufiapprovers@gmail.com")
