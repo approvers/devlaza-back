@@ -1,0 +1,23 @@
+name: build
+on:
+  pull_request:
+    branches:
+      - master
+      - dev
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Cache Dependencies
+        env:
+          cache-name: cache-gradle-dependencies
+        with:
+          path: ~/.gradle
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+            ${{ runner.os }}-
+      - name: Run build
+        run: ./gradlew build
