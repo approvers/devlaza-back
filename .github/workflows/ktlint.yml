@@ -6,13 +6,40 @@ on:
       - dev
 
 jobs:
-  ktlint:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: ktlint
-        uses: ScaCap/action-ktlint@master
+      - name: Setup Ruby
+        uses: actions/setup-ruby@v1
         with:
-          github_token: ${{ secrets.github_token }}
-          reporter: github-pr-review
-          level: warning
+          ruby-version: '2.6'
+          architecture: 'x64'
+      - name: Cache Danger
+        uses: actions/cache@v1
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile') }}
+          restore-keys: |
+            ${{ runner.os }}-gems-
+      - name: Install Danger
+        run: |
+          gem install bundler
+          bundle config path vendor/bundle
+          bundle install --jobs 4 --retry 3
+      - name: Cache Gradle
+        uses: actions/cache@v1
+        env:
+          cache-name: cache-gradle-gradlew
+        with:
+          path: ~/.gradle
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+            ${{ runner.os }}-
+      - name: Run ktlintCheck
+        run: ./gradlew ktlintCheck
+      - name: Run Danger
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bundle exec danger
