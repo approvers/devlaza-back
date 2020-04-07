@@ -8,8 +8,11 @@ import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue
 import javax.persistence.Id
+import javax.persistence.Table
+import javax.persistence.Index
 
 @Entity
+@Table(indexes = [Index(name="projects_index", columnList="NAME, ID, RECRUITING", unique=true)])
 data class Projects(
         @Column(name="name", nullable = false) var name:String,
         @Column(name="introduction") var introduction: String,
@@ -28,6 +31,7 @@ data class ProjectPoster(
 )
 
 @Entity
+@Table(indexes = [Index(name="sites_index", columnList="PROJECT_ID, URL", unique=true)])
 data class Sites(
         @Column(name="explanation", nullable = false) var explanation: String,
         @Column(name="url", nullable = false) var url: String,
@@ -42,12 +46,14 @@ data class SitesPoster(
 )
 
 @Entity
+@Table(indexes = [Index(name="tags_index", columnList="NAME", unique=true)])
 data class Tags(
         @Id @GeneratedValue(generator = "uuid2") @GenericGenerator(name = "uuid2", strategy = "uuid2") @Column(columnDefinition = "BINARY(16)") var id: UUID? = null,
         @Column(name="name", nullable = false) var name: String
 ): Serializable
 
 @Entity
+@Table(indexes = [Index(name="tags_to_project_index", columnList="PROJECT_ID, TAG_NAME", unique=true)])
 data class TagsToProjectsBridge(
         @Column(name="project_id", nullable = false) var projectId: UUID,
 		@Column(name="tag_name", nullable = false) var tagName: String,
@@ -55,6 +61,7 @@ data class TagsToProjectsBridge(
 ): Serializable
 
 @Entity
+@Table(indexes = [Index(name="favorite_index", columnList="USER_ID, PROJECT_ID", unique=true)])
 data class Favorite(
 		@Id @GeneratedValue(generator = "uuid2") @GenericGenerator(name = "uuid2", strategy = "uuid2") @Column(columnDefinition = "BINARY(16)") var id: UUID? = null,
         @Column(name="user_id", nullable = false) var user_id: String,
@@ -62,6 +69,7 @@ data class Favorite(
 )
 
 @Entity
+@Table(indexes = [Index(name="project_member_index", columnList="PROJECT_ID, USER_ID", unique=true)])
 data class ProjectMember(
 		@Id @GeneratedValue(generator = "uuid2") @GenericGenerator(name = "uuid2", strategy = "uuid2") @Column(columnDefinition = "BINARY(16)") var id: UUID? = null,
 		@Column(name="project_id", nullable=false) var projectId: UUID,

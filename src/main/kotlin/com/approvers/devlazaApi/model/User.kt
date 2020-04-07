@@ -7,9 +7,12 @@ import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue
 import javax.persistence.Id
+import javax.persistence.Table
+import javax.persistence.Index
 import javax.validation.constraints.Email
 
 @Entity
+@Table(indexes = [Index(name="member_index", columnList="NAME, ID", unique=true)])
 data class User(
 		@Id @GeneratedValue(generator="uuid2") @GenericGenerator(name="uuid2", strategy="uuid2") @Column(columnDefinition="BINARY(16)") var id: UUID? = null,
 		@Column(name="name", nullable=false) var name: String,
@@ -30,6 +33,7 @@ data class Token(
 )
 
 @Entity
+@Table(indexes = [Index(name="develop_exp_index", columnList="USERID", unique=true)])
 data class DevelopExp(
 		@Id @GeneratedValue(generator="uuid2") @GenericGenerator(name="uuid2", strategy="uuid2") @Column(columnDefinition="BINARY(16)") var id: UUID? = null,
 		@Column(name="userId") var userId: UUID,
@@ -37,6 +41,7 @@ data class DevelopExp(
 )
 
 @Entity
+@Table(indexes = [Index(name="follow_index", columnList="USERID, FOLLOWIINGUSERID", unique=true)])
 data class Follow(
 		@Id @GeneratedValue(generator="uuid2") @GenericGenerator(name="uuid2", strategy="uuid2") @Column(columnDefinition="BINARY(16)") var id: UUID? = null,
 		@Column(name="userId") var userId: UUID,
@@ -44,6 +49,7 @@ data class Follow(
 )
 
 @Entity
+@Table(indexes = [Index(name="mail_token_index", columnList="TOKEN", unique=true)])
 data class MailToken(
 		@Id @GeneratedValue(generator="uuid2") @GenericGenerator(name="uuid2", strategy="uuid2") @Column(columnDefinition="BINARY(16)") var id: UUID? = null,
 		@Column(name="userId", nullable=false) var userId: UUID,
