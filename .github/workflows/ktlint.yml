@@ -13,8 +13,8 @@ jobs:
       - name: Setup Ruby
         uses: actions/setup-ruby@v1
         with:
-          ruby-version: 2.7
-          architecture: x64
+          ruby-version: '2.7'
+          architecture: 'x64'
       - name: Cache Danger
         uses: actions/cache@v1
         with:
