@@ -21,7 +21,7 @@ jobs:
             ${{ runner.os }}-gradle-
             ${{ runner.os }}-
       - name: ktlint
-        uses: mirror-kt/action-kotlin@master
+        uses: mirror-kt/action-ktlint@master
         with:
           github_token: ${{ secrets.github_token }}
           reporter: github-pr-review
