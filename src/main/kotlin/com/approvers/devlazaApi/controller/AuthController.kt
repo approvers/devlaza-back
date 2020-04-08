@@ -41,16 +41,16 @@ class AuthController(
     }
 
 
-    private fun decode(token: String): UUID{
+    private fun decode(token: String): UUID {
         val userId: UUID
-        try{
+        try {
             val decodedJWT: DecodedJWT = verifier.verify(token)
 
             userId = UUID.fromString(
                     decodedJWT.getClaim("USER_ID").asString()
             )
-        }catch (e: Exception){
-            when(e){
+        } catch (e: Exception) {
+            when (e) {
                 is UnsupportedEncodingException, is JWTVerificationException
                 -> throw BadRequest("token is invalid")
                 else -> throw e

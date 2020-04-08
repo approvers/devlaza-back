@@ -15,7 +15,7 @@ interface UserRepository : JpaRepository<User, String> {
     fun findByMailAddress(address: String): List<User>
 }
 
-interface DevelopExpRepository: JpaRepository<DevelopExp, UUID>{
+interface DevelopExpRepository : JpaRepository<DevelopExp, UUID> {
     fun findByUserId(userId: UUID): List<DevelopExp>
 }
 

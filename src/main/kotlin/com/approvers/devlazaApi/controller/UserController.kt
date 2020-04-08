@@ -3,12 +3,9 @@ package com.approvers.devlazaApi.controller
 import com.approvers.devlazaApi.errors.BadRequest
 import com.approvers.devlazaApi.errors.NotFound
 import com.approvers.devlazaApi.model.LoginPoster
-import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
+import com.approvers.devlazaApi.model.MailToken
+import com.approvers.devlazaApi.model.User
+import com.approvers.devlazaApi.model.UserPoster
 import com.approvers.devlazaApi.repository.MailTokenRepository
 import com.approvers.devlazaApi.repository.UserRepository
 import com.auth0.jwt.JWT
@@ -18,6 +15,12 @@ import org.springframework.http.ResponseEntity
 import org.springframework.mail.MailException
 import org.springframework.mail.MailSender
 import org.springframework.mail.SimpleMailMessage
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
 import java.util.*
 import javax.validation.Valid
 
@@ -27,9 +30,10 @@ class UserController(
         private val userRepository: UserRepository,
         private val mailTokenRepository: MailTokenRepository,
         @Autowired private val sender: MailSender
-){
+) {
     private val secret: String = System.getenv("secret") ?: "secret"
-    private val charPool:List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
+    private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
+
     @GetMapping("/")
     fun getAllUsers(): List<User> = userRepository.findAll()
 
@@ -71,7 +75,7 @@ class UserController(
 
         userRepository.save(newUser)
 
-        while (true){
+        while (true) {
             token = createMailToken()
             if (mailTokenRepository.findByToken(token).isEmpty()) break
         }
@@ -109,7 +113,7 @@ class UserController(
 
         if (user.passWord != loginPoster.password) throw BadRequest("Password invalid")
 
-        if (userId is UUID){
+        if (userId is UUID) {
             val token: String = createToken(user.name, user.id!!)
             return ResponseEntity.ok(token)
         }
@@ -122,8 +126,7 @@ class UserController(
             .joinToString("")
 
 
-
-    private fun createToken(userName: String, userId: UUID): String{
+    private fun createToken(userName: String, userId: UUID): String {
         val issuedAt = Date()
         val algorithm: Algorithm = Algorithm.HMAC256(secret)
         val id: UUID = UUID.randomUUID()

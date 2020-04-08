@@ -14,15 +14,15 @@ import javax.validation.constraints.Email
 @Entity
 @Table(indexes = [Index(columnList = "name")])
 data class User(
-        @Id @GeneratedValue(generator="uuid2") @GenericGenerator(name="uuid2", strategy="uuid2") @Column(columnDefinition="BINARY(16)") var id: UUID? = null,
-        @Column(name="name", nullable=false) var name: String,
-        @Column(name="birthDay", nullable=false) var birthDay: LocalDateTime? = LocalDateTime.of(1900, 1, 1, 0, 0, 0),
-        @Column(name="bio", nullable=false) var bio:String = "",
-        @Column(name="favoriteLang", nullable=false) var favoriteLang: String = "",
-        @Column(name="passWord", nullable=false) var passWord: String,
-        @Column(name="showId", nullable=false) var showId: String,
-        @Column(name="mailAuthorized", nullable=false) var mailAuthorized: Int = 0,
-        @Column(name="mailAddress", nullable=false) var mailAddress: String
+        @Id @GeneratedValue(generator = "uuid2") @GenericGenerator(name = "uuid2", strategy = "uuid2") @Column(columnDefinition = "BINARY(16)") var id: UUID? = null,
+        @Column(name = "name", nullable = false) var name: String,
+        @Column(name = "birthDay", nullable = false) var birthDay: LocalDateTime? = LocalDateTime.of(1900, 1, 1, 0, 0, 0),
+        @Column(name = "bio", nullable = false) var bio: String = "",
+        @Column(name = "favoriteLang", nullable = false) var favoriteLang: String = "",
+        @Column(name = "passWord", nullable = false) var passWord: String,
+        @Column(name = "showId", nullable = false) var showId: String,
+        @Column(name = "mailAuthorized", nullable = false) var mailAuthorized: Int = 0,
+        @Column(name = "mailAddress", nullable = false) var mailAddress: String
 )
 
 @Entity

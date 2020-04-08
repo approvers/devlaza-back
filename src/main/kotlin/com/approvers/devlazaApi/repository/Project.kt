@@ -28,8 +28,7 @@ interface TagsRepository : JpaRepository<Tags, String> {
 }
 
 @Repository
-interface TagsToProjectsBridgeRepository: JpaRepository<TagsToProjectsBridge, String>{
-}
+interface TagsToProjectsBridgeRepository : JpaRepository<TagsToProjectsBridge, String>
 
 @Repository
 interface ProjectMemberRepository : JpaRepository<ProjectMember, String> {

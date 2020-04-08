@@ -11,14 +11,12 @@ import com.approvers.devlazaApi.errors.NotFound
 import com.approvers.devlazaApi.model.ProjectMember
 import com.approvers.devlazaApi.model.ProjectPoster
 import com.approvers.devlazaApi.model.Projects
-import com.approvers.devlazaApi.model.TagsToProjectsBridge
 import com.approvers.devlazaApi.model.Tags
 import com.approvers.devlazaApi.model.TagsToProjectsBridge
-import com.approvers.devlazaApi.model.Token
 import com.approvers.devlazaApi.repository.ProjectMemberRepository
 import com.approvers.devlazaApi.repository.ProjectsRepository
 import com.approvers.devlazaApi.repository.TagsRepository
-import com.approvers.devlazaApi.repository.ProjectMemberRepository
+import com.approvers.devlazaApi.repository.TagsToProjectsBridgeRepository
 import com.approvers.devlazaApi.repository.UserRepository
 import com.auth0.jwt.JWT
 import com.auth0.jwt.JWTVerifier
@@ -33,7 +31,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RestController
 import java.io.UnsupportedEncodingException
 import java.util.*
 import javax.validation.Valid
@@ -47,7 +45,7 @@ class ProjectsController(
         private val tagsRepository: TagsRepository,
         private val projectMemberRepository: ProjectMemberRepository,
         private val userRepository: UserRepository
-){
+) {
     private val secret: String = System.getenv("secret") ?: "secret"
     private val algorithm: Algorithm = Algorithm.HMAC256(secret)
     private val verifier: JWTVerifier = JWT.require(algorithm).build()
@@ -56,7 +54,7 @@ class ProjectsController(
     fun getAllProjects(): List<Projects> = projectsRepository.findAll()
 
     @PostMapping("/")
-    fun createNewProject(@Valid @RequestBody rawData: ProjectPoster): ResponseEntity<Projects>{
+    fun createNewProject(@Valid @RequestBody rawData: ProjectPoster): ResponseEntity<Projects> {
         val userId: UUID = decode(rawData.token)
         val projects = Projects(
                 name = rawData.name,
@@ -174,16 +172,16 @@ class ProjectsController(
         throw BadRequest("The user does not created the project")
     }
 
-    private fun decode(token: String): UUID{
+    private fun decode(token: String): UUID {
         val userId: UUID
-        try{
+        try {
             val decodedJWT: DecodedJWT = verifier.verify(token)
 
             userId = UUID.fromString(
                     decodedJWT.getClaim("USER_ID").asString()
             )
-        }catch (e: Exception){
-            when(e){
+        } catch (e: Exception) {
+            when (e) {
                 is UnsupportedEncodingException, is JWTVerificationException
                 -> throw BadRequest("token is invalid")
                 else -> throw e
@@ -193,7 +191,7 @@ class ProjectsController(
         return userId
     }
 
-    private fun getProject(projectId: UUID): Projects?{
+    private fun getProject(projectId: UUID): Projects? {
         val projectsList: List<Projects> = projectsRepository.findById(projectId)
         return projectsList.singleOrNull()
     }
@@ -237,7 +235,7 @@ class ProjectsController(
         return tags
     }
 
-    private fun TagsRepository.createNewTag(tag: String){
+    private fun TagsRepository.createNewTag(tag: String) {
         if (this.findByName(tag).isNotEmpty()) return
 
         val newTag = Tags(name = tag)
