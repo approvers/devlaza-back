@@ -15,13 +15,13 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.io.UnsupportedEncodingException
-import java.util.*
+import java.util.UUID
 import javax.validation.Valid
 
 @RestController
 @RequestMapping("/auth")
 class AuthController(
-        private val userRepository: UserRepository
+    private val userRepository: UserRepository
 ) {
     private val secret: String = System.getenv("secret") ?: "secret"
     private val algorithm: Algorithm = Algorithm.HMAC256(secret)
@@ -41,16 +41,16 @@ class AuthController(
     }
 
 
-    private fun decode(token: String): UUID{
+    private fun decode(token: String): UUID {
         val userId: UUID
-        try{
+        try {
             val decodedJWT: DecodedJWT = verifier.verify(token)
 
             userId = UUID.fromString(
-                    decodedJWT.getClaim("USER_ID").asString()
+                decodedJWT.getClaim("USER_ID").asString()
             )
-        }catch (e: Exception){
-            when(e){
+        } catch (e: Exception) {
+            when (e) {
                 is UnsupportedEncodingException, is JWTVerificationException
                 -> throw BadRequest("token is invalid")
                 else -> throw e
