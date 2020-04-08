@@ -39,7 +39,7 @@ class UserController(
     fun getAllUsers(): List<User> = userRepository.findAll()
 
     @GetMapping("/{id}")
-    fun getUserByShowId(@PathVariable(value="id") id: String): ResponseEntity<User> {
+    fun getUserByShowId(@PathVariable(value = "id") id: String): ResponseEntity<User> {
         val user = userRepository.findByShowId(id).singleOrNull() ?: throw NotFound("No users matching id found")
         return ResponseEntity.ok(user)
     }
