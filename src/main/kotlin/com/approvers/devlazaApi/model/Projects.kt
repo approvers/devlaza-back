@@ -3,27 +3,27 @@ package com.approvers.devlazaApi.model
 import org.hibernate.annotations.GenericGenerator
 import java.io.Serializable
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue
 import javax.persistence.Id
-import javax.persistence.Table
 import javax.persistence.Index
+import javax.persistence.Table
 
 @Entity
 @Table(indexes = [
-    Index(columnList="name"),
-    Index(columnList="recruiting")
+    Index(columnList = "name"),
+    Index(columnList = "recruiting")
 ])
 data class Projects(
-        @Column(name="name", nullable = false) var name:String,
-        @Column(name="introduction") var introduction: String,
+        @Column(name = "name", nullable = false) var name: String,
+        @Column(name = "introduction") var introduction: String,
         @Id @GeneratedValue(generator = "uuid2") @GenericGenerator(name = "uuid2", strategy = "uuid2") @Column(columnDefinition = "BINARY(16)") var id: UUID? = null,
-        @Column(name="created_at", nullable = false) var created_at: LocalDateTime = LocalDateTime.now(),
-        @Column(name="created_user_id", nullable = false) var createdUserId: UUID? = null,
-        @Column(name="recruiting", nullable = false) var recruiting: Int = 1
-): Serializable
+        @Column(name = "created_at", nullable = false) var created_at: LocalDateTime = LocalDateTime.now(),
+        @Column(name = "created_user_id", nullable = false) var createdUserId: UUID? = null,
+        @Column(name = "recruiting", nullable = false) var recruiting: Int = 1
+) : Serializable
 
 data class ProjectPoster(
         var name: String,
@@ -35,15 +35,15 @@ data class ProjectPoster(
 
 @Entity
 @Table(indexes = [
-    Index(columnList="url"),
-    Index(columnList="project_id")
+    Index(columnList = "url"),
+    Index(columnList = "project_id")
 ])
 data class Sites(
-        @Column(name="explanation", nullable = false) var explanation: String,
-        @Column(name="url", nullable = false) var url: String,
+        @Column(name = "explanation", nullable = false) var explanation: String,
+        @Column(name = "url", nullable = false) var url: String,
         @Id @GeneratedValue(generator = "uuid2") @GenericGenerator(name = "uuid2", strategy = "uuid2") @Column(columnDefinition = "BINARY(16)") var id: UUID? = null,
-        @Column(name="projectId", nullable = false) var projectId: UUID
-): Serializable
+        @Column(name = "projectId", nullable = false) var projectId: UUID
+) : Serializable
 
 data class SitesPoster(
         var url: String,
@@ -52,44 +52,44 @@ data class SitesPoster(
 )
 
 @Entity
-@Table(indexes = [Index(name="tags_index", columnList="NAME", unique=true)])
+@Table(indexes = [Index(name = "tags_index", columnList = "NAME", unique = true)])
 data class Tags(
         @Id @GeneratedValue(generator = "uuid2") @GenericGenerator(name = "uuid2", strategy = "uuid2") @Column(columnDefinition = "BINARY(16)") var id: UUID? = null,
-        @Column(name="name", nullable = false, unique=true) var name: String
-): Serializable
+        @Column(name = "name", nullable = false, unique = true) var name: String
+) : Serializable
 
 @Entity
 @Table(indexes = [
-    Index(columnList="project_id, tag_name", unique=true),
-    Index(columnList="project_id"),
-    Index(columnList="tag_name")
+    Index(columnList = "project_id, tag_name", unique = true),
+    Index(columnList = "project_id"),
+    Index(columnList = "tag_name")
 ])
 data class TagsToProjectsBridge(
-        @Column(name="project_id", nullable = false) var projectId: UUID,
-		@Column(name="tag_name", nullable = false) var tagName: String,
+        @Column(name = "project_id", nullable = false) var projectId: UUID,
+        @Column(name = "tag_name", nullable = false) var tagName: String,
         @Id @GeneratedValue(generator = "uuid2") @GenericGenerator(name = "uuid2", strategy = "uuid2") @Column(columnDefinition = "BINARY(16)") var id: UUID? = null
-): Serializable
+) : Serializable
 
 @Entity
 @Table(indexes = [
-    Index(columnList="user_id, project_id", unique=true),
-    Index(columnList="user_id"),
-    Index(columnList="project_id")
+    Index(columnList = "user_id, project_id", unique = true),
+    Index(columnList = "user_id"),
+    Index(columnList = "project_id")
 ])
 data class Favorite(
-		@Id @GeneratedValue(generator = "uuid2") @GenericGenerator(name = "uuid2", strategy = "uuid2") @Column(columnDefinition = "BINARY(16)") var id: UUID? = null,
-        @Column(name="user_id", nullable = false) var user_id: String,
-        @Column(name="project_id", nullable = false) var project_id: String
+        @Id @GeneratedValue(generator = "uuid2") @GenericGenerator(name = "uuid2", strategy = "uuid2") @Column(columnDefinition = "BINARY(16)") var id: UUID? = null,
+        @Column(name = "user_id", nullable = false) var user_id: String,
+        @Column(name = "project_id", nullable = false) var project_id: String
 )
 
 @Entity
 @Table(indexes = [
-    Index(columnList="project_id, user_id", unique=true),
-    Index(columnList="project_id"),
-    Index(columnList="user_id")
+    Index(columnList = "project_id, user_id", unique = true),
+    Index(columnList = "project_id"),
+    Index(columnList = "user_id")
 ])
 data class ProjectMember(
-		@Id @GeneratedValue(generator = "uuid2") @GenericGenerator(name = "uuid2", strategy = "uuid2") @Column(columnDefinition = "BINARY(16)") var id: UUID? = null,
-		@Column(name="project_id", nullable=false) var projectId: UUID,
-		@Column(name="user_id", nullable=false) var userId: UUID
+        @Id @GeneratedValue(generator = "uuid2") @GenericGenerator(name = "uuid2", strategy = "uuid2") @Column(columnDefinition = "BINARY(16)") var id: UUID? = null,
+        @Column(name = "project_id", nullable = false) var projectId: UUID,
+        @Column(name = "user_id", nullable = false) var userId: UUID
 )

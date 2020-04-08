@@ -5,7 +5,7 @@ import com.approvers.devlazaApi.repository.ProjectsRepository
 import com.approvers.devlazaApi.repository.UserRepository
 import java.util.*
 
-class SearchWithUser: ProjectSearcherWithOtherRepository<String?, UserRepository> {
+class SearchWithUser : ProjectSearcherWithOtherRepository<String?, UserRepository> {
     override fun search(projectsSet: Set<Projects>, param: String?, repository: ProjectsRepository, secondaryRepository: UserRepository): Set<Projects> {
         if (param !is String) return projectsSet
         val createdUserList = secondaryRepository.findByNameLike("%$param%")

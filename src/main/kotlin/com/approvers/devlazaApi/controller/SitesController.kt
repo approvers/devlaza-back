@@ -6,26 +6,26 @@ import com.approvers.devlazaApi.model.Sites
 import com.approvers.devlazaApi.model.SitesPoster
 import com.approvers.devlazaApi.repository.SitesRepository
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.bind.annotation.PathVariable
-import java.util.UUID
+import java.util.*
 import javax.validation.Valid
 
 @RestController
 @RequestMapping("/sites")
-class SitesController(private val sitesRepository: SitesRepository){
+class SitesController(private val sitesRepository: SitesRepository) {
     @PostMapping("/add")
-    fun createNewSite(@Valid @RequestBody rawData: SitesPoster): Sites{
+    fun createNewSite(@Valid @RequestBody rawData: SitesPoster): Sites {
         val newSite = Sites(
                 explanation = rawData.explanation,
                 url = rawData.url,
                 projectId = rawData.projectId
         )
-        for (site in sitesRepository.findByProjectId(rawData.projectId)){
+        for (site in sitesRepository.findByProjectId(rawData.projectId)) {
             if (rawData.url == site.url) throw BadRequest("The site's url is already registered")
         }
 
@@ -33,11 +33,11 @@ class SitesController(private val sitesRepository: SitesRepository){
     }
 
     @GetMapping("/{project_id}")
-    fun searchFromProjectId(@PathVariable(value="project_id") rawId: String?): ResponseEntity<List<Sites>> {
+    fun searchFromProjectId(@PathVariable(value = "project_id") rawId: String?): ResponseEntity<List<Sites>> {
         val projectId: UUID
         try {
             projectId = UUID.fromString(rawId)
-        }catch (e: IllegalArgumentException){
+        } catch (e: IllegalArgumentException) {
             throw BadRequest("The format of the given ID is abnormal")
         }
         val sitesList = sitesRepository.findByProjectId(projectId)
@@ -45,7 +45,7 @@ class SitesController(private val sitesRepository: SitesRepository){
         throw NotFound("No project corresponding to ID was found")
     }
 
-    fun saveSites(rawSites: String?, projectId: UUID){
+    fun saveSites(rawSites: String?, projectId: UUID) {
         val sites: List<DividedSites> = rawSites.divideToSites()
 
         for (site in sites) {
@@ -59,14 +59,14 @@ class SitesController(private val sitesRepository: SitesRepository){
         }
     }
 
-    private fun String?.divideToSites(): List<DividedSites>{
+    private fun String?.divideToSites(): List<DividedSites> {
         if (this !is String) return listOf()
         val rawSites: List<String> = this.split("+")
         val sites: MutableList<DividedSites> = mutableListOf()
 
-        for (site in rawSites){
+        for (site in rawSites) {
             val tmp: List<String> = site.split(",")
-            val sitesContent = DividedSites(explanation = tmp[0], url =  tmp[1])
+            val sitesContent = DividedSites(explanation = tmp[0], url = tmp[1])
 
             if (sitesContent in sites) continue
 
