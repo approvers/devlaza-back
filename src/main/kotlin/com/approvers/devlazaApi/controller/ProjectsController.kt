@@ -1,7 +1,10 @@
 package com.approvers.devlazaApi.controller
 
-
-import com.approvers.devlazaApi.controller.utils.ProjectSearcher
+import com.approvers.devlazaApi.controller.search.project.SearchWithCreatedDate
+import com.approvers.devlazaApi.controller.search.project.SearchWithKeyword
+import com.approvers.devlazaApi.controller.search.project.SearchWithRecruiting
+import com.approvers.devlazaApi.controller.search.project.SearchWithTags
+import com.approvers.devlazaApi.controller.search.project.SearchWithUser
 import com.approvers.devlazaApi.errors.BadRequest
 import com.approvers.devlazaApi.errors.NotFound
 import com.approvers.devlazaApi.model.ProjectMember
@@ -9,13 +12,16 @@ import com.approvers.devlazaApi.model.ProjectPoster
 import com.approvers.devlazaApi.model.Projects
 import com.approvers.devlazaApi.model.Tags
 import com.approvers.devlazaApi.model.TagsToProjectsBridge
-import com.approvers.devlazaApi.model.Token
 import com.approvers.devlazaApi.repository.ProjectMemberRepository
 import com.approvers.devlazaApi.repository.ProjectsRepository
 import com.approvers.devlazaApi.repository.TagsRepository
 import com.approvers.devlazaApi.repository.TagsToProjectsBridgeRepository
-import com.approvers.devlazaApi.repository.TokenRepository
 import com.approvers.devlazaApi.repository.UserRepository
+import com.auth0.jwt.JWT
+import com.auth0.jwt.JWTVerifier
+import com.auth0.jwt.algorithms.Algorithm
+import com.auth0.jwt.exceptions.JWTVerificationException
+import com.auth0.jwt.interfaces.DecodedJWT
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -25,6 +31,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.io.UnsupportedEncodingException
 import java.util.UUID
 import javax.validation.Valid
 
@@ -35,10 +42,22 @@ class ProjectsController(
     private val sitesController: SitesController,
     private val tagsToProjectsBridgeRepository: TagsToProjectsBridgeRepository,
     private val tagsRepository: TagsRepository,
-    private val tokenRepository: TokenRepository,
     private val projectMemberRepository: ProjectMemberRepository,
     private val userRepository: UserRepository
 ) {
+    private val secret: String = System.getenv("secret") ?: "secret"
+
+    // JWT
+    private val algorithm: Algorithm = Algorithm.HMAC256(secret)
+    private val verifier: JWTVerifier = JWT.require(algorithm).build()
+
+    // searcher
+    private val searchWithKeyword = SearchWithKeyword()
+    private val searchWithUser = SearchWithUser()
+    private val searchWithTags = SearchWithTags()
+    private val searchWithCreatedDate = SearchWithCreatedDate()
+    private val searchWithRecruiting = SearchWithRecruiting()
+
     @GetMapping("/")
     fun getAllProjects(
         @RequestParam(name = "get_begin", defaultValue = "0") raw_get_begin: String,
@@ -61,11 +80,11 @@ class ProjectsController(
 
     @PostMapping("/")
     fun createNewProject(@Valid @RequestBody rawData: ProjectPoster): ResponseEntity<Projects> {
-        val token: Token = tokenRepository.checkToken(rawData.token)
+        val userId: UUID = decode(rawData.token)
         val projects = Projects(
             name = rawData.name,
             introduction = rawData.introduction,
-            createdUserId = token.userId
+            createdUserId = userId
         )
 
         projectsRepository.save(projects)
@@ -83,7 +102,7 @@ class ProjectsController(
         @PathVariable(value = "id") rawId: String
     ): ResponseEntity<Unit> {
         val token: String = tokenPoster.token
-        val userId: UUID = tokenRepository.getUserIdFromToken(token)
+        val userId: UUID = decode(token)
 
         val projectId: UUID = rawId.toUUID()
 
@@ -107,7 +126,7 @@ class ProjectsController(
         @RequestParam(name = "token", defaultValue = "") token: String,
         @PathVariable(value = "id") rawId: String
     ): ResponseEntity<Unit> {
-        val userId: UUID = tokenRepository.getUserIdFromToken(token)
+        val userId: UUID = decode(token)
 
         val projectId: UUID = rawId.toUUID()
 
@@ -140,20 +159,15 @@ class ProjectsController(
 
         val tags: List<String> = rawTags.divideToTags()
 
-        val searchProject = ProjectSearcher(
-            projectsRepository.findAll().toSet(),
-            projectsRepository,
-            tagsToProjectsBridgeRepository,
-            userRepository
+        val projectsList: List<Projects> = search(
+            keyword,
+            user,
+            recruiting,
+            tags,
+            searchStart,
+            searchEnd,
+            sortOrder
         )
-        searchProject.withKeyWord(keyword)
-        searchProject.withUser(user)
-        searchProject.withRecruiting(recruiting)
-        searchProject.withTags(tags)
-        searchProject.filterWithCreatedDay(searchStart, searchEnd)
-        searchProject.decideSort(sortOrder)
-
-        val projectsList: List<Projects> = searchProject.getResult()
 
         if (projectsList.isEmpty()) throw NotFound("No projects match your search criteria")
         return ResponseEntity.ok(projectsList)
@@ -174,13 +188,32 @@ class ProjectsController(
 
         val project: Projects = getProject(projectId) ?: throw BadRequest("Project not found")
 
-        val userIdFromToken: UUID = tokenRepository.getUserIdFromToken(token)
+        val userIdFromToken: UUID = decode(token)
 
         if (project.createdUserId == userIdFromToken) {
             projectsRepository.delete(project)
             return ResponseEntity.noContent().build()
         }
         throw BadRequest("The user does not created the project")
+    }
+
+    private fun decode(token: String): UUID {
+        val userId: UUID
+        try {
+            val decodedJWT: DecodedJWT = verifier.verify(token)
+
+            userId = UUID.fromString(
+                decodedJWT.getClaim("USER_ID").asString()
+            )
+        } catch (e: Exception) {
+            when (e) {
+                is UnsupportedEncodingException, is JWTVerificationException
+                -> throw BadRequest("token is invalid")
+                else -> throw e
+            }
+        }
+
+        return userId
     }
 
     private fun getProject(projectId: UUID): Projects? {
@@ -227,17 +260,6 @@ class ProjectsController(
         return tags
     }
 
-    private fun TokenRepository.getUserIdFromToken(token: String): UUID {
-        val checkedToken: Token = this.checkToken(token)
-        return checkedToken.userId
-    }
-
-    private fun TokenRepository.checkToken(token: String): Token {
-        val tokenList: List<Token> = this.findByToken(token)
-        if (tokenList.isEmpty()) throw NotFound("This token is invalid")
-        return tokenList[0]
-    }
-
     private fun TagsRepository.createNewTag(tag: String) {
         if (this.findByName(tag).isNotEmpty()) return
 
@@ -263,6 +285,35 @@ class ProjectsController(
         } catch (e: NotFound) {
             false
         }
+    }
+
+    private fun search(
+        keyword: String?,
+        userName: String?,
+        recruiting: Int,
+        tags: List<String>,
+        searchStart: String?,
+        searchEnd: String?,
+        sortOrder: String
+    ): List<Projects> {
+        var projects: Set<Projects> = projectsRepository.findAll().toSet()
+        projects = searchWithKeyword.search(projects, keyword, projectsRepository)
+        projects = searchWithUser.search(projects, userName, projectsRepository, userRepository)
+        projects = searchWithTags.search(projects, tags, projectsRepository, tagsToProjectsBridgeRepository)
+        projects = searchWithRecruiting.search(projects, recruiting, projectsRepository)
+
+        projects = searchWithCreatedDate.search(projects, listOf(searchStart, searchEnd), projectsRepository)
+
+        val projectsList: MutableList<Projects> = projects.toMutableList()
+        when (sortOrder) {
+            "asc" -> projectsList.sortBy { it.created_at }
+            "desc" -> {
+                projectsList.sortBy { it.created_at }
+                projectsList.reverse()
+            }
+            else -> projectsList.sortBy { it.created_at }
+        }
+        return projectsList.toList()
     }
 }
 
