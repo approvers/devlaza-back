@@ -37,6 +37,7 @@ dependencies {
         exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
     }
     implementation("org.springframework.boot:spring-boot-starter-mail")
+    implementation("com.auth0:java-jwt:3.10.2")
 }
 
 tasks.withType<Test> {
