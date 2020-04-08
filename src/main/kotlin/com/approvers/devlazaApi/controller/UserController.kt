@@ -39,10 +39,9 @@ class UserController(
     fun getAllUsers(): List<User> = userRepository.findAll()
 
     @GetMapping("/{id}")
-    fun getUserByShowId(@PathVariable(value = "id") id: String): ResponseEntity<List<User>> {
-        val users: List<User> = userRepository.findByShowId(id)
-        if (users.isEmpty()) NotFound("Could not find user from id")
-        return ResponseEntity.ok(users)
+    fun getUserByShowId(@PathVariable(value = "id") id: String): ResponseEntity<User> {
+        val user = userRepository.findByShowId(id).singleOrNull() ?: throw NotFound("No users matching id found")
+        return ResponseEntity.ok(user)
     }
 
     @GetMapping("/auth/{mailToken}")
