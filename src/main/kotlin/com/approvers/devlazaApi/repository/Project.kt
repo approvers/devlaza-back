@@ -29,7 +29,6 @@ interface TagsRepository: JpaRepository<Tags, String>{
 
 @Repository
 interface TagsToProjectsBridgeRepository: JpaRepository<TagsToProjectsBridge, String>{
-	fun findByProjectId(id: UUID): List<TagsToProjectsBridge>
 }
 
 @Repository
