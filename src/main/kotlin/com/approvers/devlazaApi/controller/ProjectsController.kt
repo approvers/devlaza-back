@@ -49,7 +49,9 @@ class ProjectsController(
 
         if (getBegin >= getEnd) BadRequest("get_begin must be smaller than get_end")
 
-        val allProjects: List<Projects> = projectsRepository.findAll()
+        val allProjects: MutableList<Projects> = projectsRepository.findAll().toMutableList()
+        allProjects.sortBy{it.created_at}
+        allProjects.reverse()
         if (allProjects.size < getBegin) NotFound("get_begin is larger than number of projects")
 
         if (allProjects.size < getEnd) getEnd = allProjects.size
