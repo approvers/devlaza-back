@@ -33,9 +33,6 @@ class UserController(
         @Autowired private val sender: MailSender
 ){
     private val charPool:List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
-    @GetMapping("/")
-    fun getAllUsers():List<User> = userRepository.findAll()
-
     @GetMapping("/{id}")
     fun getUserByShowId(@PathVariable(value="id") id: String): ResponseEntity<List<User>>{
         val users: List<User> = userRepository.findByShowId(id)
