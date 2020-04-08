@@ -33,18 +33,18 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.io.UnsupportedEncodingException
-import java.util.*
+import java.util.UUID
 import javax.validation.Valid
 
 @RestController
 @RequestMapping("/projects")
 class ProjectsController(
-        private val projectsRepository: ProjectsRepository,
-        private val sitesController: SitesController,
-        private val tagsToProjectsBridgeRepository: TagsToProjectsBridgeRepository,
-        private val tagsRepository: TagsRepository,
-        private val projectMemberRepository: ProjectMemberRepository,
-        private val userRepository: UserRepository
+    private val projectsRepository: ProjectsRepository,
+    private val sitesController: SitesController,
+    private val tagsToProjectsBridgeRepository: TagsToProjectsBridgeRepository,
+    private val tagsRepository: TagsRepository,
+    private val projectMemberRepository: ProjectMemberRepository,
+    private val userRepository: UserRepository
 ) {
     private val secret: String = System.getenv("secret") ?: "secret"
     private val algorithm: Algorithm = Algorithm.HMAC256(secret)
@@ -57,9 +57,9 @@ class ProjectsController(
     fun createNewProject(@Valid @RequestBody rawData: ProjectPoster): ResponseEntity<Projects> {
         val userId: UUID = decode(rawData.token)
         val projects = Projects(
-                name = rawData.name,
-                introduction = rawData.introduction,
-                createdUserId = userId
+            name = rawData.name,
+            introduction = rawData.introduction,
+            createdUserId = userId
         )
 
         projectsRepository.save(projects)
@@ -73,8 +73,8 @@ class ProjectsController(
 
     @PostMapping("/{id}/join")
     fun joinToProject(
-            @Valid @RequestBody tokenPoster: TokenPoster,
-            @PathVariable(value = "id") rawId: String
+        @Valid @RequestBody tokenPoster: TokenPoster,
+        @PathVariable(value = "id") rawId: String
     ): ResponseEntity<Unit> {
         val token: String = tokenPoster.token
         val userId: UUID = decode(token)
@@ -87,8 +87,8 @@ class ProjectsController(
         if (projectMemberRepository.checkProjectMemberExist(userId, projectId)) throw BadRequest("User already join to this project")
 
         val newMember = ProjectMember(
-                userId = userId,
-                projectId = projectId
+            userId = userId,
+            projectId = projectId
         )
         projectMemberRepository.save(newMember)
         return ResponseEntity.ok().build()
@@ -98,8 +98,8 @@ class ProjectsController(
 
     @DeleteMapping("/{id}/leave")
     fun leaveFromProject(
-            @RequestParam(name = "token", defaultValue = "") token: String,
-            @PathVariable(value = "id") rawId: String
+        @RequestParam(name = "token", defaultValue = "") token: String,
+        @PathVariable(value = "id") rawId: String
     ): ResponseEntity<Unit> {
         val userId: UUID = decode(token)
 
@@ -121,27 +121,27 @@ class ProjectsController(
     // TODO: tag検索と時間での絞り込みの実装、Userテーブルとの連携
     @GetMapping("/condition")
     fun searchWithConditions(
-            @RequestParam(name = "keyword", defaultValue = "#{null}") keyword: String?,
-            @RequestParam(name = "count", defaultValue = "100") rawCount: Int?,
-            @RequestParam(name = "user", defaultValue = "#{null}") user: String?,
-            @RequestParam(name = "tags", defaultValue = "#{null}") rawTags: String?,
-            @RequestParam(name = "sort", defaultValue = "asc") sortOrder: String,
-            @RequestParam(name = "recruiting", defaultValue = "1") rawRecruiting: String,
-            @RequestParam(name = "searchStartDate", defaultValue = "#{null}") searchStart: String?,
-            @RequestParam(name = "searchEndDate", defaultValue = "#{null}") searchEnd: String?
+        @RequestParam(name = "keyword", defaultValue = "#{null}") keyword: String?,
+        @RequestParam(name = "count", defaultValue = "100") rawCount: Int?,
+        @RequestParam(name = "user", defaultValue = "#{null}") user: String?,
+        @RequestParam(name = "tags", defaultValue = "#{null}") rawTags: String?,
+        @RequestParam(name = "sort", defaultValue = "asc") sortOrder: String,
+        @RequestParam(name = "recruiting", defaultValue = "1") rawRecruiting: String,
+        @RequestParam(name = "searchStartDate", defaultValue = "#{null}") searchStart: String?,
+        @RequestParam(name = "searchEndDate", defaultValue = "#{null}") searchEnd: String?
     ): ResponseEntity<List<Projects>> {
         val recruiting: Int = rawRecruiting.toIntOrNull() ?: 1
 
         val tags: List<String> = rawTags.divideToTags()
 
         val projectsList: List<Projects> = search(
-                keyword,
-                user,
-                recruiting,
-                tags,
-                searchStart,
-                searchEnd,
-                sortOrder
+            keyword,
+            user,
+            recruiting,
+            tags,
+            searchStart,
+            searchEnd,
+            sortOrder
         )
 
         if (projectsList.isEmpty()) throw NotFound("No projects match your search criteria")
@@ -178,7 +178,7 @@ class ProjectsController(
             val decodedJWT: DecodedJWT = verifier.verify(token)
 
             userId = UUID.fromString(
-                    decodedJWT.getClaim("USER_ID").asString()
+                decodedJWT.getClaim("USER_ID").asString()
             )
         } catch (e: Exception) {
             when (e) {
@@ -263,13 +263,13 @@ class ProjectsController(
     }
 
     private fun search(
-            keyword: String?,
-            userName: String?,
-            recruiting: Int,
-            tags: List<String>,
-            searchStart: String?,
-            searchEnd: String?,
-            sortOrder: String
+        keyword: String?,
+        userName: String?,
+        recruiting: Int,
+        tags: List<String>,
+        searchStart: String?,
+        searchEnd: String?,
+        sortOrder: String
     ): List<Projects> {
         var projects: Set<Projects> = projectsRepository.findAll().toSet()
         projects = SearchWithKeyword().search(projects, keyword, projectsRepository)

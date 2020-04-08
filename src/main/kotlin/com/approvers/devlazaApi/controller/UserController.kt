@@ -21,15 +21,16 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import java.util.*
+import java.util.Date
+import java.util.UUID
 import javax.validation.Valid
 
 @RestController
 @RequestMapping("/users")
 class UserController(
-        private val userRepository: UserRepository,
-        private val mailTokenRepository: MailTokenRepository,
-        @Autowired private val sender: MailSender
+    private val userRepository: UserRepository,
+    private val mailTokenRepository: MailTokenRepository,
+    @Autowired private val sender: MailSender
 ) {
     private val secret: String = System.getenv("secret") ?: "secret"
     private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
@@ -59,16 +60,16 @@ class UserController(
 
     @PostMapping("/")
     fun addNewUser(
-            @Valid @RequestBody userPoster: UserPoster
+        @Valid @RequestBody userPoster: UserPoster
     ): ResponseEntity<User> {
         val sameMailAddressChecker: List<User> = userRepository.findByMailAddress(userPoster.mailAddress)
         if (sameMailAddressChecker.isNotEmpty()) throw BadRequest("The email address is already in use.")
 
         val newUser = User(
-                name = userPoster.name,
-                passWord = userPoster.password,
-                showId = userPoster.showId,
-                mailAddress = userPoster.mailAddress
+            name = userPoster.name,
+            passWord = userPoster.password,
+            showId = userPoster.showId,
+            mailAddress = userPoster.mailAddress
         )
 
         var token: String
@@ -82,8 +83,8 @@ class UserController(
 
 
         val mailToken = MailToken(
-                token = token,
-                userId = newUser.id!!
+            token = token,
+            userId = newUser.id!!
         )
 
         mailTokenRepository.save(mailToken)
@@ -101,7 +102,7 @@ class UserController(
 
     @PostMapping("/login")
     fun login(
-            @Valid @RequestBody loginPoster: LoginPoster
+        @Valid @RequestBody loginPoster: LoginPoster
     ): ResponseEntity<String> {
         val userList: List<User> = userRepository.findByMailAddress(loginPoster.address)
         if (userList.isEmpty()) throw NotFound("Could not find user from email address")
@@ -121,9 +122,9 @@ class UserController(
     }
 
     private fun createMailToken() = (1..32)
-            .map { kotlin.random.Random.nextInt(0, charPool.size) }
-            .map(charPool::get)
-            .joinToString("")
+        .map { kotlin.random.Random.nextInt(0, charPool.size) }
+        .map(charPool::get)
+        .joinToString("")
 
 
     private fun createToken(userName: String, userId: UUID): String {
@@ -131,11 +132,11 @@ class UserController(
         val algorithm: Algorithm = Algorithm.HMAC256(secret)
         val id: UUID = UUID.randomUUID()
         return JWT.create()
-                .withIssuer("Approvers")
-                .withIssuedAt(issuedAt)
-                .withJWTId(id.toString())
-                .withClaim("USER_ID", userId.toString())
-                .withClaim("USER_name", userName)
-                .sign(algorithm)
+            .withIssuer("Approvers")
+            .withIssuedAt(issuedAt)
+            .withJWTId(id.toString())
+            .withClaim("USER_ID", userId.toString())
+            .withClaim("USER_name", userName)
+            .sign(algorithm)
     }
 }

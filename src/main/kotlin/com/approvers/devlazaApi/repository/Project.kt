@@ -7,7 +7,7 @@ import com.approvers.devlazaApi.model.Tags
 import com.approvers.devlazaApi.model.TagsToProjectsBridge
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
-import java.util.*
+import java.util.UUID
 
 @Repository
 interface ProjectsRepository : JpaRepository<Projects, String> {

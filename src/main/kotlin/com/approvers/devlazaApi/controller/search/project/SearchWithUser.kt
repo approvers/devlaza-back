@@ -3,7 +3,7 @@ package com.approvers.devlazaApi.controller.search.project
 import com.approvers.devlazaApi.model.Projects
 import com.approvers.devlazaApi.repository.ProjectsRepository
 import com.approvers.devlazaApi.repository.UserRepository
-import java.util.*
+import java.util.UUID
 
 class SearchWithUser : ProjectSearcherWithOtherRepository<String?, UserRepository> {
     override fun search(projectsSet: Set<Projects>, param: String?, repository: ProjectsRepository, secondaryRepository: UserRepository): Set<Projects> {

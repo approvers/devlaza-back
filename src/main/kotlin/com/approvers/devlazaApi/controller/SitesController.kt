@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import java.util.*
+import java.util.UUID
 import javax.validation.Valid
 
 @RestController
@@ -21,9 +21,9 @@ class SitesController(private val sitesRepository: SitesRepository) {
     @PostMapping("/add")
     fun createNewSite(@Valid @RequestBody rawData: SitesPoster): Sites {
         val newSite = Sites(
-                explanation = rawData.explanation,
-                url = rawData.url,
-                projectId = rawData.projectId
+            explanation = rawData.explanation,
+            url = rawData.url,
+            projectId = rawData.projectId
         )
         for (site in sitesRepository.findByProjectId(rawData.projectId)) {
             if (rawData.url == site.url) throw BadRequest("The site's url is already registered")
@@ -50,11 +50,11 @@ class SitesController(private val sitesRepository: SitesRepository) {
 
         for (site in sites) {
             createNewSite(
-                    SitesPoster(
-                            explanation = site.explanation,
-                            url = site.url,
-                            projectId = projectId
-                    )
+                SitesPoster(
+                    explanation = site.explanation,
+                    url = site.url,
+                    projectId = projectId
+                )
             )
         }
     }
@@ -76,7 +76,7 @@ class SitesController(private val sitesRepository: SitesRepository) {
     }
 
     private data class DividedSites(
-            val explanation: String,
-            val url: String
+        val explanation: String,
+        val url: String
     )
 }

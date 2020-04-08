@@ -4,7 +4,7 @@ import com.approvers.devlazaApi.model.Projects
 import com.approvers.devlazaApi.model.TagsToProjectsBridge
 import com.approvers.devlazaApi.repository.ProjectsRepository
 import com.approvers.devlazaApi.repository.TagsToProjectsBridgeRepository
-import java.util.*
+import java.util.UUID
 
 class SearchWithTags : ProjectSearcherWithOtherRepository<List<String>, TagsToProjectsBridgeRepository> {
     override fun search(projectsSet: Set<Projects>, param: List<String>, repository: ProjectsRepository, secondaryRepository: TagsToProjectsBridgeRepository): Set<Projects> {

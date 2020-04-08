@@ -5,7 +5,7 @@ import com.approvers.devlazaApi.model.Follow
 import com.approvers.devlazaApi.model.MailToken
 import com.approvers.devlazaApi.model.User
 import org.springframework.data.jpa.repository.JpaRepository
-import java.util.*
+import java.util.UUID
 
 interface UserRepository : JpaRepository<User, String> {
     fun findByName(name: String): List<User>
