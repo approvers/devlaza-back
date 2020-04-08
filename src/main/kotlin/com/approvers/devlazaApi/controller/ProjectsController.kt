@@ -109,7 +109,7 @@ class ProjectsController(
         @Valid @RequestBody tokenPoster: TokenPoster,
         @PathVariable(value = "id") rawId: String
     ): ResponseEntity<Unit> {
-        val userId: UUID = decode(token)
+        val userId: UUID = decode(tokenPoster.token)
 
         val projectId: UUID = rawId.toUUID()
 
