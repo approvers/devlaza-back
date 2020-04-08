@@ -46,8 +46,17 @@ class ProjectsController(
     private val userRepository: UserRepository
 ) {
     private val secret: String = System.getenv("secret") ?: "secret"
+
+    // JWT
     private val algorithm: Algorithm = Algorithm.HMAC256(secret)
     private val verifier: JWTVerifier = JWT.require(algorithm).build()
+
+    // searcher
+    private val searchWithKeyword = SearchWithKeyword()
+    private val searchWithUser = SearchWithUser()
+    private val searchWithTags = SearchWithTags()
+    private val searchWithCreatedDate = SearchWithCreatedDate()
+    private val searchWithRecruiting = SearchWithRecruiting()
 
     @GetMapping("/")
     fun getAllProjects(): List<Projects> = projectsRepository.findAll()
@@ -271,12 +280,12 @@ class ProjectsController(
         sortOrder: String
     ): List<Projects> {
         var projects: Set<Projects> = projectsRepository.findAll().toSet()
-        projects = SearchWithKeyword().search(projects, keyword, projectsRepository)
-        projects = SearchWithUser().search(projects, userName, projectsRepository, userRepository)
-        projects = SearchWithTags().search(projects, tags, projectsRepository, tagsToProjectsBridgeRepository)
-        projects = SearchWithRecruiting().search(projects, recruiting, projectsRepository)
+        projects = searchWithKeyword.search(projects, keyword, projectsRepository)
+        projects = searchWithUser.search(projects, userName, projectsRepository, userRepository)
+        projects = searchWithTags.search(projects, tags, projectsRepository, tagsToProjectsBridgeRepository)
+        projects = searchWithRecruiting.search(projects, recruiting, projectsRepository)
 
-        projects = SearchWithCreatedDate().search(projects, listOf(searchStart, searchEnd), projectsRepository)
+        projects = searchWithCreatedDate.search(projects, listOf(searchStart, searchEnd), projectsRepository)
 
         val projectsList: MutableList<Projects> = projects.toMutableList()
         when (sortOrder) {
