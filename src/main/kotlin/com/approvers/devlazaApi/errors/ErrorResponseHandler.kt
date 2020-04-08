@@ -8,16 +8,16 @@ import org.springframework.web.context.request.WebRequest
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
 
 @RestControllerAdvice
-class ErrorResponseHandler: ResponseEntityExceptionHandler() {
+class ErrorResponseHandler : ResponseEntityExceptionHandler() {
     override fun handleExceptionInternal(ex: Exception, body: Any?, headers: HttpHeaders, status: HttpStatus, request: WebRequest): ResponseEntity<Any> {
-        val returnBody: ErrorContents = if (body !is ErrorContents){
-            val code = when(status.reasonPhrase){
+        val returnBody: ErrorContents = if (body !is ErrorContents) {
+            val code = when (status.reasonPhrase) {
                 "Bad Request" -> "400"
                 "Not Found" -> "404"
                 else -> ""
             }
             ErrorContents(status.reasonPhrase, "", code)
-        }else{
+        } else {
             body
         }
         return ResponseEntity(returnBody, headers, status)
