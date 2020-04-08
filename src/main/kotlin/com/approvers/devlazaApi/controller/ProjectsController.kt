@@ -85,11 +85,12 @@ class ProjectsController(
 
     data class TokenPoster(val token: String)
 
-    @DeleteMapping("/{id}/leave")
+    @PostMapping("/{id}/leave")
     fun leaveFromProject(
-            @RequestParam(name="token", defaultValue="") token: String,
+            @Valid @RequestBody tokenPoster: TokenPoster,
             @PathVariable(value="id") rawId: String
     ): ResponseEntity<Unit> {
+        val token: String = tokenPoster.token
         val userId: UUID = tokenRepository.getUserIdFromToken(token)
 
         val projectId: UUID = rawId.toUUID()
