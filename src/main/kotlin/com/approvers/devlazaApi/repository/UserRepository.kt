@@ -3,7 +3,6 @@ package com.approvers.devlazaApi.repository
 import com.approvers.devlazaApi.model.DevelopExp
 import com.approvers.devlazaApi.model.Follow
 import com.approvers.devlazaApi.model.MailToken
-import com.approvers.devlazaApi.model.Token
 import com.approvers.devlazaApi.model.User
 import org.springframework.data.jpa.repository.JpaRepository
 import java.util.*
@@ -16,11 +15,7 @@ interface UserRepository : JpaRepository<User, String> {
     fun findByMailAddress(address: String): List<User>
 }
 
-interface TokenRepository : JpaRepository<Token, UUID> {
-    fun findByToken(token: String): List<Token>
-}
-
-interface DevelopExpRepository : JpaRepository<DevelopExp, UUID> {
+interface DevelopExpRepository: JpaRepository<DevelopExp, UUID>{
     fun findByUserId(userId: UUID): List<DevelopExp>
 }
 

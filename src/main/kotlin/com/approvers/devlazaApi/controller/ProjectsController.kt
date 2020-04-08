@@ -11,15 +11,20 @@ import com.approvers.devlazaApi.errors.NotFound
 import com.approvers.devlazaApi.model.ProjectMember
 import com.approvers.devlazaApi.model.ProjectPoster
 import com.approvers.devlazaApi.model.Projects
+import com.approvers.devlazaApi.model.TagsToProjectsBridge
 import com.approvers.devlazaApi.model.Tags
 import com.approvers.devlazaApi.model.TagsToProjectsBridge
 import com.approvers.devlazaApi.model.Token
 import com.approvers.devlazaApi.repository.ProjectMemberRepository
 import com.approvers.devlazaApi.repository.ProjectsRepository
 import com.approvers.devlazaApi.repository.TagsRepository
-import com.approvers.devlazaApi.repository.TagsToProjectsBridgeRepository
-import com.approvers.devlazaApi.repository.TokenRepository
+import com.approvers.devlazaApi.repository.ProjectMemberRepository
 import com.approvers.devlazaApi.repository.UserRepository
+import com.auth0.jwt.JWT
+import com.auth0.jwt.JWTVerifier
+import com.auth0.jwt.algorithms.Algorithm
+import com.auth0.jwt.exceptions.JWTVerificationException
+import com.auth0.jwt.interfaces.DecodedJWT
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -28,7 +33,8 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.PathVariable
+import java.io.UnsupportedEncodingException
 import java.util.*
 import javax.validation.Valid
 
@@ -39,20 +45,23 @@ class ProjectsController(
         private val sitesController: SitesController,
         private val tagsToProjectsBridgeRepository: TagsToProjectsBridgeRepository,
         private val tagsRepository: TagsRepository,
-        private val tokenRepository: TokenRepository,
         private val projectMemberRepository: ProjectMemberRepository,
         private val userRepository: UserRepository
-) {
+){
+    private val secret: String = System.getenv("secret") ?: "secret"
+    private val algorithm: Algorithm = Algorithm.HMAC256(secret)
+    private val verifier: JWTVerifier = JWT.require(algorithm).build()
+
     @GetMapping("/")
     fun getAllProjects(): List<Projects> = projectsRepository.findAll()
 
     @PostMapping("/")
-    fun createNewProject(@Valid @RequestBody rawData: ProjectPoster): ResponseEntity<Projects> {
-        val token: Token = tokenRepository.checkToken(rawData.token)
+    fun createNewProject(@Valid @RequestBody rawData: ProjectPoster): ResponseEntity<Projects>{
+        val userId: UUID = decode(rawData.token)
         val projects = Projects(
                 name = rawData.name,
                 introduction = rawData.introduction,
-                createdUserId = token.userId
+                createdUserId = userId
         )
 
         projectsRepository.save(projects)
@@ -70,7 +79,7 @@ class ProjectsController(
             @PathVariable(value = "id") rawId: String
     ): ResponseEntity<Unit> {
         val token: String = tokenPoster.token
-        val userId: UUID = tokenRepository.getUserIdFromToken(token)
+        val userId: UUID = decode(token)
 
         val projectId: UUID = rawId.toUUID()
 
@@ -94,7 +103,7 @@ class ProjectsController(
             @RequestParam(name = "token", defaultValue = "") token: String,
             @PathVariable(value = "id") rawId: String
     ): ResponseEntity<Unit> {
-        val userId: UUID = tokenRepository.getUserIdFromToken(token)
+        val userId: UUID = decode(token)
 
         val projectId: UUID = rawId.toUUID()
 
@@ -156,7 +165,7 @@ class ProjectsController(
 
         val project: Projects = getProject(projectId) ?: throw BadRequest("Project not found")
 
-        val userIdFromToken: UUID = tokenRepository.getUserIdFromToken(token)
+        val userIdFromToken: UUID = decode(token)
 
         if (project.createdUserId == userIdFromToken) {
             projectsRepository.delete(project)
@@ -165,7 +174,26 @@ class ProjectsController(
         throw BadRequest("The user does not created the project")
     }
 
-    private fun getProject(projectId: UUID): Projects? {
+    private fun decode(token: String): UUID{
+        val userId: UUID
+        try{
+            val decodedJWT: DecodedJWT = verifier.verify(token)
+
+            userId = UUID.fromString(
+                    decodedJWT.getClaim("USER_ID").asString()
+            )
+        }catch (e: Exception){
+            when(e){
+                is UnsupportedEncodingException, is JWTVerificationException
+                -> throw BadRequest("token is invalid")
+                else -> throw e
+            }
+        }
+
+        return userId
+    }
+
+    private fun getProject(projectId: UUID): Projects?{
         val projectsList: List<Projects> = projectsRepository.findById(projectId)
         return projectsList.singleOrNull()
     }
@@ -209,18 +237,7 @@ class ProjectsController(
         return tags
     }
 
-    private fun TokenRepository.getUserIdFromToken(token: String): UUID {
-        val checkedToken: Token = this.checkToken(token)
-        return checkedToken.userId
-    }
-
-    private fun TokenRepository.checkToken(token: String): Token {
-        val tokenList: List<Token> = this.findByToken(token)
-        if (tokenList.isEmpty()) throw NotFound("This token is invalid")
-        return tokenList[0]
-    }
-
-    private fun TagsRepository.createNewTag(tag: String) {
+    private fun TagsRepository.createNewTag(tag: String){
         if (this.findByName(tag).isNotEmpty()) return
 
         val newTag = Tags(name = tag)
