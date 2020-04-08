@@ -7,50 +7,50 @@ import com.approvers.devlazaApi.errors.NotFound
 import com.approvers.devlazaApi.model.ProjectMember
 import com.approvers.devlazaApi.model.ProjectPoster
 import com.approvers.devlazaApi.model.Projects
-import com.approvers.devlazaApi.model.Token
-import com.approvers.devlazaApi.model.TagsToProjectsBridge
 import com.approvers.devlazaApi.model.Tags
-import com.approvers.devlazaApi.repository.ProjectsRepository
-import com.approvers.devlazaApi.repository.TagsToProjectsBridgeRepository
-import com.approvers.devlazaApi.repository.TagsRepository
-import com.approvers.devlazaApi.repository.TokenRepository
+import com.approvers.devlazaApi.model.TagsToProjectsBridge
+import com.approvers.devlazaApi.model.Token
 import com.approvers.devlazaApi.repository.ProjectMemberRepository
+import com.approvers.devlazaApi.repository.ProjectsRepository
+import com.approvers.devlazaApi.repository.TagsRepository
+import com.approvers.devlazaApi.repository.TagsToProjectsBridgeRepository
+import com.approvers.devlazaApi.repository.TokenRepository
 import com.approvers.devlazaApi.repository.UserRepository
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.DeleteMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
-import java.util.*
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
+import java.util.UUID
 import javax.validation.Valid
 
 @RestController
 @RequestMapping("/projects")
 class ProjectsController(
-        private val projectsRepository: ProjectsRepository,
-        private val sitesController: SitesController,
-        private val tagsToProjectsBridgeRepository: TagsToProjectsBridgeRepository,
-        private val tagsRepository: TagsRepository,
-        private val tokenRepository: TokenRepository,
-        private val projectMemberRepository: ProjectMemberRepository,
-        private val userRepository: UserRepository
-){
+    private val projectsRepository: ProjectsRepository,
+    private val sitesController: SitesController,
+    private val tagsToProjectsBridgeRepository: TagsToProjectsBridgeRepository,
+    private val tagsRepository: TagsRepository,
+    private val tokenRepository: TokenRepository,
+    private val projectMemberRepository: ProjectMemberRepository,
+    private val userRepository: UserRepository
+) {
     @GetMapping("/")
     fun getAllProjects(
-            @RequestParam(name="get_begin", defaultValue="0") raw_get_begin: String,
-            @RequestParam(name="get_end", defaultValue="20") raw_get_end: String
-    ): List<Projects>{
+        @RequestParam(name = "get_begin", defaultValue = "0") raw_get_begin: String,
+        @RequestParam(name = "get_end", defaultValue = "20") raw_get_end: String
+    ): List<Projects> {
         val getBegin: Int = raw_get_begin.toIntOrNull() ?: throw BadRequest("get_begin must be integer")
         var getEnd: Int = raw_get_end.toIntOrNull() ?: throw BadRequest("get_end must be integer")
 
         if (getBegin >= getEnd) BadRequest("get_begin must be smaller than get_end")
 
         val allProjects: MutableList<Projects> = projectsRepository.findAll().toMutableList()
-        allProjects.sortBy{it.created_at}
+        allProjects.sortBy { it.created_at }
         allProjects.reverse()
         if (allProjects.size < getBegin) NotFound("get_begin is larger than number of projects")
 
@@ -60,12 +60,12 @@ class ProjectsController(
     }
 
     @PostMapping("/")
-    fun createNewProject(@Valid @RequestBody rawData: ProjectPoster): ResponseEntity<Projects>{
+    fun createNewProject(@Valid @RequestBody rawData: ProjectPoster): ResponseEntity<Projects> {
         val token: Token = tokenRepository.checkToken(rawData.token)
         val projects = Projects(
-                name = rawData.name,
-                introduction = rawData.introduction,
-                createdUserId = token.userId
+            name = rawData.name,
+            introduction = rawData.introduction,
+            createdUserId = token.userId
         )
 
         projectsRepository.save(projects)
@@ -79,9 +79,9 @@ class ProjectsController(
 
     @PostMapping("/{id}/join")
     fun joinToProject(
-            @Valid @RequestBody tokenPoster: TokenPoster,
-            @PathVariable(value="id") rawId: String
-    ): ResponseEntity<Unit>{
+        @Valid @RequestBody tokenPoster: TokenPoster,
+        @PathVariable(value = "id") rawId: String
+    ): ResponseEntity<Unit> {
         val token: String = tokenPoster.token
         val userId: UUID = tokenRepository.getUserIdFromToken(token)
 
@@ -93,8 +93,8 @@ class ProjectsController(
         if (projectMemberRepository.checkProjectMemberExist(userId, projectId)) throw BadRequest("User already join to this project")
 
         val newMember = ProjectMember(
-                userId=userId,
-                projectId=projectId
+            userId = userId,
+            projectId = projectId
         )
         projectMemberRepository.save(newMember)
         return ResponseEntity.ok().build()
@@ -104,8 +104,8 @@ class ProjectsController(
 
     @DeleteMapping("/{id}/leave")
     fun leaveFromProject(
-            @RequestParam(name="token", defaultValue="") token: String,
-            @PathVariable(value="id") rawId: String
+        @RequestParam(name = "token", defaultValue = "") token: String,
+        @PathVariable(value = "id") rawId: String
     ): ResponseEntity<Unit> {
         val userId: UUID = tokenRepository.getUserIdFromToken(token)
 
@@ -127,24 +127,24 @@ class ProjectsController(
     // TODO: tag検索と時間での絞り込みの実装、Userテーブルとの連携
     @GetMapping("/condition")
     fun searchWithConditions(
-            @RequestParam(name="keyword", defaultValue="#{null}") keyword: String?,
-            @RequestParam(name="count", defaultValue="100") rawCount: Int?,
-            @RequestParam(name="user", defaultValue="#{null}") user:String?,
-            @RequestParam(name="tags", defaultValue="#{null}") rawTags: String?,
-            @RequestParam(name="sort", defaultValue="asc") sortOrder: String,
-            @RequestParam(name="recruiting", defaultValue="1") rawRecruiting: String,
-            @RequestParam(name="searchStartDate", defaultValue="#{null}") searchStart: String?,
-            @RequestParam(name="searchEndDate", defaultValue="#{null}") searchEnd: String?
-    ): ResponseEntity<List<Projects>>{
+        @RequestParam(name = "keyword", defaultValue = "#{null}") keyword: String?,
+        @RequestParam(name = "count", defaultValue = "100") rawCount: Int?,
+        @RequestParam(name = "user", defaultValue = "#{null}") user: String?,
+        @RequestParam(name = "tags", defaultValue = "#{null}") rawTags: String?,
+        @RequestParam(name = "sort", defaultValue = "asc") sortOrder: String,
+        @RequestParam(name = "recruiting", defaultValue = "1") rawRecruiting: String,
+        @RequestParam(name = "searchStartDate", defaultValue = "#{null}") searchStart: String?,
+        @RequestParam(name = "searchEndDate", defaultValue = "#{null}") searchEnd: String?
+    ): ResponseEntity<List<Projects>> {
         val recruiting: Int = rawRecruiting.toIntOrNull() ?: 1
 
         val tags: List<String> = rawTags.divideToTags()
 
         val searchProject = ProjectSearcher(
-                projectsRepository.findAll().toSet(),
-                projectsRepository,
-                tagsToProjectsBridgeRepository,
-                userRepository
+            projectsRepository.findAll().toSet(),
+            projectsRepository,
+            tagsToProjectsBridgeRepository,
+            userRepository
         )
         searchProject.withKeyWord(keyword)
         searchProject.withUser(user)
@@ -160,91 +160,92 @@ class ProjectsController(
     }
 
     @GetMapping("/{id}")
-    fun getProjectById(@PathVariable(value="id", required=true) rawId: String): ResponseEntity<Projects>{
+    fun getProjectById(@PathVariable(value = "id", required = true) rawId: String): ResponseEntity<Projects> {
         val projectId: UUID = rawId.toUUID()
 
-        val project: Projects =  getProject(projectId)?: throw BadRequest("")
+        val project: Projects = getProject(projectId) ?: throw BadRequest("")
 
         return ResponseEntity.ok(project)
     }
 
     @DeleteMapping("/{id}")
-    fun deleteProject(@PathVariable(value="id", required=true) rawId: String, @RequestParam(name="token", required=true) token: String): ResponseEntity<String>{
+    fun deleteProject(@PathVariable(value = "id", required = true) rawId: String, @RequestParam(name = "token", required = true) token: String): ResponseEntity<String> {
         val projectId: UUID = rawId.toUUID()
 
         val project: Projects = getProject(projectId) ?: throw BadRequest("Project not found")
 
         val userIdFromToken: UUID = tokenRepository.getUserIdFromToken(token)
 
-        if (project.createdUserId == userIdFromToken){
+        if (project.createdUserId == userIdFromToken) {
             projectsRepository.delete(project)
             return ResponseEntity.noContent().build()
         }
         throw BadRequest("The user does not created the project")
     }
 
-    private fun getProject(projectId: UUID): Projects?{
+    private fun getProject(projectId: UUID): Projects? {
         val projectsList: List<Projects> = projectsRepository.findById(projectId)
         return projectsList.singleOrNull()
     }
 
-    private fun String.toUUID():UUID{
+    private fun String.toUUID(): UUID {
         val id: UUID
-        try{
+        try {
             id = UUID.fromString(this)
-        }catch (e: IllegalArgumentException){
+        } catch (e: IllegalArgumentException) {
             throw BadRequest("The format of id is invalid")
         }
         return id
     }
 
-    private fun TagsToProjectsBridgeRepository.addTagToProject(rawTags: String, projectId: UUID, tagsRepository: TagsRepository){
+    private fun TagsToProjectsBridgeRepository.addTagToProject(rawTags: String, projectId: UUID, tagsRepository: TagsRepository) {
         val tags: List<String> = rawTags.divideToTags().distinct()
 
-        for (tag in tags){
+        for (tag in tags) {
             tagsRepository.createNewTag(tag)
-            val tmp = TagsToProjectsBridge(tagName=tag, projectId=projectId)
+            val tmp = TagsToProjectsBridge(tagName = tag, projectId = projectId)
             this.save(tmp)
         }
     }
 
-    private fun String?.divideToTags(): List<String>{
+    private fun String?.divideToTags(): List<String> {
         val tags: MutableList<String> = this.getTags() ?: return listOf()
-    
+
         return tags.filterNot { it.isEmpty() }
     }
 
-    private fun String?.getTags(): MutableList<String>?{
+    private fun String?.getTags(): MutableList<String>? {
         if (this !is String) return null
 
         val regex = Regex("\\+")
         val tags: MutableList<String>
-        tags = if (regex.containsMatchIn(this)){
+        tags = if (regex.containsMatchIn(this)) {
             this.split("+").toMutableList()
-        }else{
+        } else {
             this.split(" ").toMutableList()
         }
         return tags
     }
 
-    private fun TokenRepository.getUserIdFromToken(token: String): UUID{
+    private fun TokenRepository.getUserIdFromToken(token: String): UUID {
         val checkedToken: Token = this.checkToken(token)
         return checkedToken.userId
     }
 
-    private fun TokenRepository.checkToken(token: String): Token{
+    private fun TokenRepository.checkToken(token: String): Token {
         val tokenList: List<Token> = this.findByToken(token)
         if (tokenList.isEmpty()) throw NotFound("This token is invalid")
         return tokenList[0]
     }
 
-    private fun TagsRepository.createNewTag(tag: String){
+    private fun TagsRepository.createNewTag(tag: String) {
         if (this.findByName(tag).isNotEmpty()) return
 
-        val newTag = Tags(name=tag)
+        val newTag = Tags(name = tag)
         this.save(newTag)
     }
-    private fun ProjectMemberRepository.getProjectMember(userId: UUID, projectId: UUID): ProjectMember{
+
+    private fun ProjectMemberRepository.getProjectMember(userId: UUID, projectId: UUID): ProjectMember {
         val projectMemberSetWithUserId: Set<ProjectMember> = this.findByUserId(userId).toSet()
         val projectMemberSetWithProjectId: Set<ProjectMember> = this.findByProjectId(projectId).toSet()
 
@@ -255,11 +256,11 @@ class ProjectsController(
         return getResultList[0]
     }
 
-    private fun ProjectMemberRepository.checkProjectMemberExist(userId: UUID, projectId: UUID): Boolean{
+    private fun ProjectMemberRepository.checkProjectMemberExist(userId: UUID, projectId: UUID): Boolean {
         return try {
             this.getProjectMember(userId, projectId)
             true
-        }catch (e: NotFound){
+        } catch (e: NotFound) {
             false
         }
     }
