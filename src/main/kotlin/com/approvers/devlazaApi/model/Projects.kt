@@ -4,15 +4,20 @@ import org.hibernate.annotations.GenericGenerator
 import java.io.Serializable
 import java.time.LocalDateTime
 import java.util.UUID
+import javax.persistence.CascadeType
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue
 import javax.persistence.Id
 import javax.persistence.Index
+import javax.persistence.JoinColumn
+import javax.persistence.JoinTable
+import javax.persistence.ManyToMany
 import javax.persistence.Table
 
 @Entity
-@Table(indexes = [
+@Table(name = "projects",
+    indexes = [
     Index(columnList = "name"),
     Index(columnList = "recruiting")
 ])
@@ -22,8 +27,24 @@ data class Projects(
     @Id @GeneratedValue(generator = "uuid2") @GenericGenerator(name = "uuid2", strategy = "uuid2") @Column(columnDefinition = "BINARY(16)") var id: UUID? = null,
     @Column(name = "created_at", nullable = false) var created_at: LocalDateTime = LocalDateTime.now(),
     @Column(name = "created_user_id", nullable = false) var createdUserId: UUID? = null,
-    @Column(name = "recruiting", nullable = false) var recruiting: Int = 1
+    @Column(name = "recruiting", nullable = false) var recruiting: Int = 1,
+    @ManyToMany(mappedBy = "grantedProjects", cascade = [CascadeType.ALL]) var tags: MutableList<Tags> = mutableListOf()
 ) : Serializable
+
+@Entity
+@Table(indexes = [Index(name = "tags_index", columnList = "NAME", unique = true)])
+class Tags(
+    @Id @GeneratedValue(generator = "uuid2") @GenericGenerator(name = "uuid2", strategy = "uuid2") @Column(columnDefinition = "BINARY(16)") var id: UUID? = null,
+    @Column(name = "name", nullable = false, unique = true) var name: String,
+    @ManyToMany(cascade = [CascadeType.ALL]) @JoinTable(name = "projects_tags", joinColumns = [JoinColumn(name = "tags_id", referencedColumnName = "id")], inverseJoinColumns = [JoinColumn(name = "projects_id", referencedColumnName = "id")])
+    private var grantedProjects: MutableList<Projects> = mutableListOf()
+) : Serializable{
+    fun setGrantedProjects(projects: Projects){
+        grantedProjects.add(projects)
+    }
+    fun requestGrantedProjects(): MutableList<Projects> = grantedProjects
+}
+
 
 data class ProjectPoster(
     var name: String,
@@ -42,7 +63,7 @@ data class Sites(
     @Column(name = "explanation", nullable = false) var explanation: String,
     @Column(name = "url", nullable = false) var url: String,
     @Id @GeneratedValue(generator = "uuid2") @GenericGenerator(name = "uuid2", strategy = "uuid2") @Column(columnDefinition = "BINARY(16)") var id: UUID? = null,
-    @Column(name = "projectId", nullable = false) var projectId: UUID
+    @Column(name = "project_id", nullable = false) var projectId: UUID
 ) : Serializable
 
 data class SitesPoster(
@@ -50,13 +71,6 @@ data class SitesPoster(
     var explanation: String,
     var projectId: UUID
 )
-
-@Entity
-@Table(indexes = [Index(name = "tags_index", columnList = "NAME", unique = true)])
-data class Tags(
-    @Id @GeneratedValue(generator = "uuid2") @GenericGenerator(name = "uuid2", strategy = "uuid2") @Column(columnDefinition = "BINARY(16)") var id: UUID? = null,
-    @Column(name = "name", nullable = false, unique = true) var name: String
-) : Serializable
 
 @Entity
 @Table(indexes = [

@@ -64,18 +64,28 @@ class ProjectsController(
     @PostMapping("/")
     fun createNewProject(@Valid @RequestBody rawData: ProjectPoster): ResponseEntity<Projects> {
         val userId: UUID = decode(rawData.token)
+        val projectID: UUID = generateProjectUUID()
+
+        sitesController.saveSites(rawData.sites, projectID)
+
+        val tags: List<Tags> = addTagToProject(rawData.tags, tagsRepository)
+
         val projects = Projects(
             name = rawData.name,
             introduction = rawData.introduction,
-            createdUserId = userId
+            createdUserId = userId,
+            id = projectID,
+            tags = tags.toMutableList()
         )
 
+        for (tag in tags){
+            tag.setGrantedProjects(projects)
+            tagsRepository.save(tag)
+        }
+
+        println(projects.tags)
+
         projectsRepository.save(projects)
-
-        sitesController.saveSites(rawData.sites, projects.id!!)
-
-        tagsToProjectsBridgeRepository.addTagToProject(rawData.tags, projects.id!!, tagsRepository)
-
         return ResponseEntity.ok(projects)
     }
 
@@ -214,14 +224,16 @@ class ProjectsController(
         return id
     }
 
-    private fun TagsToProjectsBridgeRepository.addTagToProject(rawTags: String, projectId: UUID, tagsRepository: TagsRepository) {
+    private fun addTagToProject(rawTags: String, tagsRepository: TagsRepository): List<Tags> {
         val tags: List<String> = rawTags.divideToTags().distinct()
 
+        val result: MutableList<Tags> = mutableListOf()
+
         for (tag in tags) {
-            tagsRepository.createNewTag(tag)
-            val tmp = TagsToProjectsBridge(tagName = tag, projectId = projectId)
-            this.save(tmp)
+            val generatedTag:Tags = tagsRepository.createNewTag(tag) ?: continue
+            result.add(generatedTag)
         }
+        return result.toList()
     }
 
     private fun String?.divideToTags(): List<String> {
@@ -243,11 +255,11 @@ class ProjectsController(
         return tags
     }
 
-    private fun TagsRepository.createNewTag(tag: String) {
-        if (this.findByName(tag).isNotEmpty()) return
+    private fun TagsRepository.createNewTag(tag: String): Tags? {
+        if (this.findByName(tag).isNotEmpty()) return this.findByName(tag).singleOrNull()
 
         val newTag = Tags(name = tag)
-        this.save(newTag)
+        return this.save(newTag)
     }
 
     private fun ProjectMemberRepository.getProjectMember(userId: UUID, projectId: UUID): ProjectMember {
@@ -297,6 +309,18 @@ class ProjectsController(
             else -> projectsList.sortBy { it.created_at }
         }
         return projectsList.toList()
+    }
+
+    private fun UUID.existProject(): Boolean {
+        val tmp: Projects = projectsRepository.findById(this).singleOrNull() ?: return false
+        return true
+    }
+
+    private fun generateProjectUUID(): UUID {
+        while (true){
+            val generatedID: UUID = UUID.randomUUID()
+            if(!generatedID.existProject()) return generatedID
+        }
     }
 }
 
