@@ -59,7 +59,24 @@ class ProjectsController(
     private val searchWithRecruiting = SearchWithRecruiting()
 
     @GetMapping("")
-    fun getAllProjects(): List<Projects> = projectsRepository.findAll()
+    fun getAllProjects(
+        @RequestParam(name = "get_begin", defaultValue = "0") raw_get_begin: String,
+        @RequestParam(name = "get_end", defaultValue = "20") raw_get_end: String
+    ): List<Projects> {
+        val getBegin: Int = raw_get_begin.toIntOrNull() ?: throw BadRequest("get_begin must be integer")
+        var getEnd: Int = raw_get_end.toIntOrNull() ?: throw BadRequest("get_end must be integer")
+
+        if (getBegin >= getEnd) BadRequest("get_begin must be smaller than get_end")
+
+        val allProjects: MutableList<Projects> = projectsRepository.findAll().toMutableList()
+        allProjects.sortBy { it.created_at }
+        allProjects.reverse()
+        if (allProjects.size < getBegin) NotFound("get_begin is larger than number of projects")
+
+        if (allProjects.size < getEnd) getEnd = allProjects.size
+
+        return allProjects.slice(getBegin..getEnd)
+    }
 
     @PostMapping("")
     fun createNewProject(@Valid @RequestBody rawData: ProjectPoster): ResponseEntity<Projects> {
