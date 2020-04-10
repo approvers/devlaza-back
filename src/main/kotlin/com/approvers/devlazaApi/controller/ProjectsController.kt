@@ -58,10 +58,10 @@ class ProjectsController(
     private val searchWithCreatedDate = SearchWithCreatedDate()
     private val searchWithRecruiting = SearchWithRecruiting()
 
-    @GetMapping("/")
+    @GetMapping("")
     fun getAllProjects(): List<Projects> = projectsRepository.findAll()
 
-    @PostMapping("/")
+    @PostMapping("")
     fun createNewProject(@Valid @RequestBody rawData: ProjectPoster): ResponseEntity<Projects> {
         val userId: UUID = decode(rawData.token)
         val projects = Projects(
