@@ -34,10 +34,13 @@ dependencies {
     runtimeOnly("com.h2database:h2")
     runtimeOnly("mysql:mysql-connector-java")
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
-        exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
+//        exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
     }
     implementation("org.springframework.boot:spring-boot-starter-mail")
     implementation("com.auth0:java-jwt:3.10.2")
+//    testImplementation("org.junit.jupiter:junit-jupiter-api")
+//    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+    testCompileOnly("org.junit.jupiter:junit-jupiter:5.6.0")
 }
 
 tasks.withType<Test> {
