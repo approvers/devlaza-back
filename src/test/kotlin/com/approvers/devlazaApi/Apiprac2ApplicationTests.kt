@@ -12,9 +12,10 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
+@AutoConfigureMockMvc
 class DevlazaApiApplicationTests(
-    @Autowired private val restTemplate: TestRestTemplate
+    @Autowired private val mockMvc: MockMvc
 ) {
 
 //    @Test
@@ -23,9 +24,9 @@ class DevlazaApiApplicationTests(
 
     @Test
     fun requestToProjects() {
-//        this.mockMvc.perform(get("/projects/")).andExpect(status().isOk)
-        val entity = restTemplate.getForEntity<String>("/projects/")
-        assert(entity.statusCode.is2xxSuccessful)
+        this.mockMvc.perform(get("/projects/")).andExpect(status().isNoContent)
+//        val entity = restTemplate.getForEntity<String>("/projects/")
+//        assert(entity.statusCode.is2xxSuccessful)
     }
 
 }
