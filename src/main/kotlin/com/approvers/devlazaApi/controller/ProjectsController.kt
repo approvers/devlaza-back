@@ -58,7 +58,7 @@ class ProjectsController(
     private val searchWithCreatedDate = SearchWithCreatedDate()
     private val searchWithRecruiting = SearchWithRecruiting()
 
-    @GetMapping("/")
+    @GetMapping("")
     fun getAllProjects(
         @RequestParam(name = "get_begin", defaultValue = "0") raw_get_begin: String,
         @RequestParam(name = "get_end", defaultValue = "20") raw_get_end: String
@@ -81,7 +81,7 @@ class ProjectsController(
         return ResponseEntity.ok(allProjects.slice(getBegin..getEnd))
     }
 
-    @PostMapping("/")
+    @PostMapping("")
     fun createNewProject(@Valid @RequestBody rawData: ProjectPoster): ResponseEntity<Projects> {
         val userId: UUID = decode(rawData.token)
         val projects = Projects(

@@ -35,7 +35,7 @@ class UserController(
     private val secret: String = System.getenv("secret") ?: "secret"
     private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
 
-    @GetMapping("/")
+    @GetMapping("")
     fun getAllUsers(): List<User> = userRepository.findAll()
 
     @GetMapping("/{id}")
@@ -57,7 +57,7 @@ class UserController(
         return ResponseEntity.ok().build()
     }
 
-    @PostMapping("/")
+    @PostMapping("")
     fun addNewUser(
         @Valid @RequestBody userPoster: UserPoster
     ): ResponseEntity<User> {

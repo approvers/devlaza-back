@@ -27,7 +27,7 @@ class AuthController(
     private val algorithm: Algorithm = Algorithm.HMAC256(secret)
     private val verifier: JWTVerifier = JWT.require(algorithm).build()
 
-    @PostMapping("/")
+    @PostMapping("")
     fun getUserInfo(@Valid @RequestBody authPoster: AuthPoster): User {
         val token: String = authPoster.token
 
