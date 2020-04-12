@@ -1,0 +1,31 @@
+spring:
+  profiles:
+    active: localhost
+
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/sample_sql
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASS:root}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAILADDRESS}
+    password: ${PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          startls:
+            enable: true
+
+  mvc:
+    throw-exception-if-no-handler-found: true
+
+  resources:
+    add-mappings: false
+
+  jpa:
+    hibernate:
+      ddl-auto: update

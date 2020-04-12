@@ -76,7 +76,7 @@ class ProjectsController(
         allProjects.reverse()
         if (allProjects.size < getBegin) NotFound("get_begin is larger than number of projects")
 
-        if (allProjects.size < getEnd) getEnd = allProjects.size
+        if (allProjects.size < getEnd) getEnd = allProjects.size - 1
 
         return ResponseEntity.ok(allProjects.slice(getBegin..getEnd))
     }

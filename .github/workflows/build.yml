@@ -14,6 +14,8 @@ jobs:
         uses: actions/cache@v1
         env:
           cache-name: cache-gradle-dependencies
+          MAILADDRESS: ${{ secrets.MAILADDRESS }}
+          PASSWORD: ${{ secrets.PASSWORD }}
         with:
           path: ~/.gradle
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts') }}

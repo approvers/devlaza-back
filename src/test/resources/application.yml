@@ -1,0 +1,23 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:AZ;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=TRUE
+    driver-class-name: org.h2.Driver
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAILADDRESS}
+    password: ${PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+  mvc:
+    throw-exception-if-no-handler-found: true
+
+  resources:
+    add-mappings: false
+
