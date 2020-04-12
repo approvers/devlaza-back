@@ -61,4 +61,13 @@ class ErrorResponseHandler : ResponseEntityExceptionHandler() {
 
         return handleExceptionInternal(ex, body, headers, status, request)
     }
+
+    @ExceptionHandler(InternalServerError::class)
+    fun handle500(ex: InternalServerError, request: WebRequest): ResponseEntity<Any> {
+        val headers = HttpHeaders()
+        val body = ErrorContents("InternalServerError", ex.message!!, "500")
+        val status = HttpStatus.INTERNAL_SERVER_ERROR
+
+        return handleExceptionInternal(ex, body, headers, status, request)
+    }
 }
