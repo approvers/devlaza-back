@@ -15,6 +15,8 @@ class ErrorResponseHandler : ResponseEntityExceptionHandler() {
             val code = when (status.reasonPhrase) {
                 "Bad Request" -> "400"
                 "Not Found" -> "404"
+                "UnAuthorized" -> "401"
+                "Forbidden" -> "403"
                 else -> ""
             }
             ErrorContents(status.reasonPhrase, "", code)
@@ -38,6 +40,33 @@ class ErrorResponseHandler : ResponseEntityExceptionHandler() {
         val headers = HttpHeaders()
         val body = ErrorContents("BadRequest", ex.message!!, "400")
         val status = HttpStatus.BAD_REQUEST
+
+        return handleExceptionInternal(ex, body, headers, status, request)
+    }
+
+    @ExceptionHandler(UnAuthorized::class)
+    fun handle401(ex: UnAuthorized, request: WebRequest): ResponseEntity<Any> {
+        val headers = HttpHeaders()
+        val body = ErrorContents("UnAuthorized", ex.message!!, "401")
+        val status = HttpStatus.UNAUTHORIZED
+
+        return handleExceptionInternal(ex, body, headers, status, request)
+    }
+
+    @ExceptionHandler(Forbidden::class)
+    fun handle403(ex: Forbidden, request: WebRequest): ResponseEntity<Any> {
+        val headers = HttpHeaders()
+        val body = ErrorContents("Forbidden", ex.message!!, "403")
+        val status = HttpStatus.FORBIDDEN
+
+        return handleExceptionInternal(ex, body, headers, status, request)
+    }
+
+    @ExceptionHandler(InternalServerError::class)
+    fun handle500(ex: InternalServerError, request: WebRequest): ResponseEntity<Any> {
+        val headers = HttpHeaders()
+        val body = ErrorContents("InternalServerError", ex.message!!, "500")
+        val status = HttpStatus.INTERNAL_SERVER_ERROR
 
         return handleExceptionInternal(ex, body, headers, status, request)
     }
