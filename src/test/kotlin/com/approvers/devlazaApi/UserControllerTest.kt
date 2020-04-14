@@ -103,7 +103,6 @@ class UserControllerTest(
         ).andExpect(status().isBadRequest)
 
         mockMvc.perform(get("/users/${params.showId}")).andExpect(status().isOk)
-
     }
 
     @Test

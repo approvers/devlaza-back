@@ -30,7 +30,7 @@ class ProjectLeaveFailTest(
 
     private lateinit var tokenCache: String
     private lateinit var joinUserTokenCache: String
-    private lateinit var projectIDCache: UUID
+    private lateinit var joinID: UUID
 
     @BeforeEach
     fun setup() {
@@ -112,15 +112,15 @@ class ProjectLeaveFailTest(
         ).andReturn()
 
         val projects: Projects = mapper.readValue(projectPostResult.response.contentAsString, Projects::class.java)
-        projectIDCache = projects.id!!
+        joinID = projects.id!!
         val tokenJson: String = generateTokenJson(joinUserTokenCache)
-        postRequestToProject("/${projectIDCache}/join", tokenJson)
+        postRequestToProject("/${joinID}/join", tokenJson)
     }
 
     @AfterEach
     fun postProcessing() {
         val tokenJson: String = generateTokenJson(tokenCache)
-        postRequestToProject("/${projectIDCache}/leave", tokenJson)
+        postRequestToProject("/${joinID}/leave", tokenJson)
         mockMvc.perform(
             delete("/users")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -133,7 +133,7 @@ class ProjectLeaveFailTest(
         val invalidToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJBcHByb3ZlcnMiLCJVU0VSX0lEIjoiM2VkNDgyZWYtNDI0Ni00N2M5LTg5NjctNzNiMDI2MWVkZDMzIiwiVVNFUl9uYW1lIjoidXNlciIsImlhdCI6MTU4Njg5NTg0NywianRpIjoiYmQ0NDFlOTAtZTRiZC00MzM3LWJiYzctZjFmMWI0ZGI1YzRlIn0.yCJMv439yn8s9Hw5OxGPtM6yPx-rDDdmKJwJhKcbbws"
         val invalidTokenJson: String = generateTokenJson(invalidToken)
 
-        postRequestToProject("/${projectIDCache}/leave", invalidTokenJson).andExpect(status().isNotFound)
+        postRequestToProject("/${joinID}/leave", invalidTokenJson).andExpect(status().isNotFound)
     }
 
     @Test
@@ -148,15 +148,15 @@ class ProjectLeaveFailTest(
     fun failLeaveFromProjectWithLeaveOwner() {
         val creatorTokenJson: String = generateTokenJson(tokenCache)
 
-        postRequestToProject("/${projectIDCache}/leave", creatorTokenJson).andExpect(status().isBadRequest)
+        postRequestToProject("/${joinID}/leave", creatorTokenJson).andExpect(status().isBadRequest)
     }
 
     @Test
     fun failLeaveFromProjectWithDidNotJoinToProject() {
         val tokenJson: String = generateTokenJson(joinUserTokenCache)
-        postRequestToProject("/${projectIDCache}/leave", tokenJson)
+        postRequestToProject("/${joinID}/leave", tokenJson)
             .andExpect(status().isNoContent)
-        postRequestToProject("/${projectIDCache}/leave", tokenJson)
+        postRequestToProject("/${joinID}/leave", tokenJson)
             .andExpect(status().isNotFound)
     }
 

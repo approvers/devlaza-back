@@ -31,7 +31,7 @@ class ProjectControllerTest(
     private val mapper = jacksonObjectMapper()
     private lateinit var tokenCache: String
     private lateinit var joinUserTokenCache: String
-    private lateinit var projectIDCache: UUID
+    private lateinit var joinID: UUID
 
     @BeforeEach
     fun createAndLoginUser() {
@@ -113,7 +113,7 @@ class ProjectControllerTest(
         ).andReturn()
 
         val projects: Projects = mapper.readValue(projectPostResult.response.contentAsString, Projects::class.java)
-        projectIDCache = projects.id!!
+        joinID = projects.id!!
     }
 
     @AfterEach
@@ -176,8 +176,8 @@ class ProjectControllerTest(
     fun joinAndLeaveToProject() {
         val tokenJson: String = generateTokenJson(joinUserTokenCache)
 
-        postRequestToProject("/${projectIDCache}/join", tokenJson).andExpect(status().isOk)
-        postRequestToProject("/${projectIDCache}/leave", tokenJson).andExpect(status().isNoContent)
+        postRequestToProject("/${joinID}/join", tokenJson).andExpect(status().isOk)
+        postRequestToProject("/${joinID}/leave", tokenJson).andExpect(status().isNoContent)
     }
 
     @Test
@@ -185,7 +185,7 @@ class ProjectControllerTest(
         val invalidToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJBcHByb3ZlcnMiLCJVU0VSX0lEIjoiM2VkNDgyZWYtNDI0Ni00N2M5LTg5NjctNzNiMDI2MWVkZDMzIiwiVVNFUl9uYW1lIjoidXNlciIsImlhdCI6MTU4Njg5NTg0NywianRpIjoiYmQ0NDFlOTAtZTRiZC00MzM3LWJiYzctZjFmMWI0ZGI1YzRlIn0.yCJMv439yn8s9Hw5OxGPtM6yPx-rDDdmKJwJhKcbbws"
         val tokenJson: String = generateTokenJson(invalidToken)
 
-        postRequestToProject("/${projectIDCache}/join", tokenJson).andExpect(status().isNotFound)
+        postRequestToProject("/${joinID}/join", tokenJson).andExpect(status().isNotFound)
     }
 
     @Test
@@ -200,9 +200,9 @@ class ProjectControllerTest(
     fun failJoinToProjectWithDoubleJoin() {
         val tokenJson: String = generateTokenJson(joinUserTokenCache)
 
-        postRequestToProject("/${projectIDCache}/join", tokenJson).andExpect(status().isOk)
-        postRequestToProject("/${projectIDCache}/join", tokenJson).andExpect(status().isBadRequest)
-        postRequestToProject("/${projectIDCache}/leave", tokenJson).andExpect(status().isNoContent)
+        postRequestToProject("/${joinID}/join", tokenJson).andExpect(status().isOk)
+        postRequestToProject("/${joinID}/join", tokenJson).andExpect(status().isBadRequest)
+        postRequestToProject("/${joinID}/leave", tokenJson).andExpect(status().isNoContent)
     }
 
     private fun postRequestToProject(
