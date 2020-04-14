@@ -66,6 +66,7 @@ class SitesController(private val sitesRepository: SitesRepository) {
 
         for (site in rawSites) {
             val tmp: List<String> = site.split(",")
+            if (tmp.size < 2) continue
             val sitesContent = DividedSites(explanation = tmp[0], url = tmp[1])
 
             if (sitesContent in sites) continue

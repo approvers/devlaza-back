@@ -17,7 +17,7 @@ spring:
       mail:
         smtp:
           auth: true
-          startls:
+          starttls:
             enable: true
 
   mvc:

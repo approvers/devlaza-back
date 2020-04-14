@@ -74,7 +74,7 @@ class ProjectsController(
 
         allProjects.sortBy { it.created_at }
         allProjects.reverse()
-        if (allProjects.size < getBegin) NotFound("get_begin is larger than number of projects")
+        if (allProjects.size < getBegin) throw NotFound("get_begin is larger than number of projects")
 
         if (allProjects.size < getEnd) getEnd = allProjects.size - 1
 
@@ -84,6 +84,7 @@ class ProjectsController(
     @PostMapping("")
     fun createNewProject(@Valid @RequestBody rawData: ProjectPoster): ResponseEntity<Projects> {
         val userId: UUID = decode(rawData.token)
+        if (userRepository.findById(userId).isEmpty()) throw NotFound("User not found with given token")
         val projects = Projects(
             name = rawData.name,
             introduction = rawData.introduction,
@@ -210,7 +211,7 @@ class ProjectsController(
             )
         } catch (e: Exception) {
             when (e) {
-                is UnsupportedEncodingException, is JWTVerificationException
+                is UnsupportedEncodingException, is JWTVerificationException, is IllegalArgumentException
                 -> throw BadRequest("token is invalid")
                 else -> throw e
             }
