@@ -14,16 +14,13 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 class DevlazaApiApplicationTests(
     @Autowired private val mockMvc: MockMvc
 ) {
-
 //    @Test
 //    fun contextLoads() {
 //    }
 
     @Test
     fun requestToProjects() {
-        this.mockMvc.perform(get("/projects/")).andExpect(status().isNoContent)
-//        val entity = restTemplate.getForEntity<String>("/projects/")
-//        assert(entity.statusCode.is2xxSuccessful)
+        mockMvc.perform(get("/projects")).andExpect(status().isNoContent)
     }
 
 }

@@ -33,11 +33,8 @@ class AuthController(
 
         val userId: UUID = decode(token)
 
-        val tmp: List<User> = userRepository.findById(userId)
-
-        if (tmp.isEmpty()) throw NotFound("No users were found for that token")
-
-        return tmp[0]
+        return userRepository.findById(userId).singleOrNull()
+            ?: throw NotFound("No users were found for that token")
     }
 
 

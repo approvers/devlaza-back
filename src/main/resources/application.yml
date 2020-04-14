@@ -29,3 +29,5 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+
+boot_env: production
