@@ -10,10 +10,12 @@ import com.approvers.devlazaApi.errors.NotFound
 import com.approvers.devlazaApi.model.ProjectMember
 import com.approvers.devlazaApi.model.ProjectPoster
 import com.approvers.devlazaApi.model.Projects
+import com.approvers.devlazaApi.model.Sites
 import com.approvers.devlazaApi.model.Tags
 import com.approvers.devlazaApi.model.TagsToProjectsBridge
 import com.approvers.devlazaApi.repository.ProjectMemberRepository
 import com.approvers.devlazaApi.repository.ProjectsRepository
+import com.approvers.devlazaApi.repository.SitesRepository
 import com.approvers.devlazaApi.repository.TagsRepository
 import com.approvers.devlazaApi.repository.TagsToProjectsBridgeRepository
 import com.approvers.devlazaApi.repository.UserRepository
@@ -43,7 +45,8 @@ class ProjectsController(
     private val tagsToProjectsBridgeRepository: TagsToProjectsBridgeRepository,
     private val tagsRepository: TagsRepository,
     private val projectMemberRepository: ProjectMemberRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val sitesRepository: SitesRepository
 ) {
     private val secret: String = System.getenv("secret") ?: "secret"
 
@@ -93,6 +96,13 @@ class ProjectsController(
 
         projectsRepository.save(projects)
 
+        val projectCreator = ProjectMember(
+            projectId = projects.id!!,
+            userId = userId
+        )
+
+        projectMemberRepository.save(projectCreator)
+
         sitesController.saveSites(rawData.sites, projects.id!!)
 
         tagsToProjectsBridgeRepository.addTagToProject(rawData.tags, projects.id!!, tagsRepository)
@@ -139,8 +149,7 @@ class ProjectsController(
 
         val projectMember: ProjectMember = projectMemberRepository.getProjectMember(userId, projectId)
 
-        val projectCreatorId: UUID = projectsRepository.findById(projectId)[0].createdUserId!!
-
+        val projectCreatorId: UUID = projectsRepository.findById(projectId).singleOrNull()!!.createdUserId!!
         if (projectCreatorId == userId) throw BadRequest("Project created user can't leave from project")
 
         projectMemberRepository.delete(projectMember)
@@ -196,6 +205,21 @@ class ProjectsController(
 
         if (project.createdUserId == userIdFromToken) {
             projectsRepository.delete(project)
+
+            val projectMemberList: List<ProjectMember> = projectMemberRepository.findByProjectId(projectId)
+            for (projectMember in projectMemberList) {
+                projectMemberRepository.delete(projectMember)
+            }
+
+            val tagsToProjectsBridgeList: List<TagsToProjectsBridge> = tagsToProjectsBridgeRepository.findByProjectId(projectId)
+            for (tagsToProjectsBridge in tagsToProjectsBridgeList) {
+                tagsToProjectsBridgeRepository.delete(tagsToProjectsBridge)
+            }
+
+            val sitesList: List<Sites> = sitesRepository.findByProjectId(projectId)
+            for (site in sitesList) {
+                sitesRepository.delete(site)
+            }
             return ResponseEntity.noContent().build()
         }
         throw BadRequest("The user does not created the project")

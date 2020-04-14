@@ -40,6 +40,7 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
     testCompileOnly("org.junit.jupiter:junit-jupiter:5.6.0")
     testCompileOnly("com.h2database:h2:1.4.200")
+    testCompileOnly("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 }
 
 tasks.withType<Test> {
