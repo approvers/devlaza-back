@@ -1,7 +1,6 @@
 package com.approvers.devlazaApi.controller
 
 import com.approvers.devlazaApi.errors.BadRequest
-import com.approvers.devlazaApi.errors.Forbidden
 import com.approvers.devlazaApi.errors.NotFound
 import com.approvers.devlazaApi.errors.UnAuthorized
 import com.approvers.devlazaApi.model.LoginPoster
@@ -79,7 +78,7 @@ class UserController(
         val sameMailAddressChecker: List<User> = userRepository.findByMailAddress(userPoster.mailAddress)
         if (sameMailAddressChecker.isNotEmpty()) throw BadRequest("The email address is already in use.")
 
-        val mailAuthorized: Int = if (bootEnv == "test"){
+        val mailAuthorized: Int = if (bootEnv == "test") {
             1
         } else {
             0
@@ -145,7 +144,7 @@ class UserController(
     @DeleteMapping("")
     fun deleteUser(
         @RequestBody tokenPoster: TokenPoster
-    ):ResponseEntity<Unit> {
+    ): ResponseEntity<Unit> {
         val token: String = tokenPoster.token
 
         val userID: UUID = decode(token)

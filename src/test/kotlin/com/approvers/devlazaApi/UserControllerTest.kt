@@ -1,7 +1,6 @@
 package com.approvers.devlazaApi
 
 import com.approvers.devlazaApi.controller.UserController
-import com.approvers.devlazaApi.model.AuthPoster
 import com.approvers.devlazaApi.model.LoginPoster
 import com.approvers.devlazaApi.model.UserPoster
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -22,7 +21,7 @@ import org.springframework.web.servlet.HandlerExceptionResolver
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
-class UserCreateTest(
+class UserControllerTest(
     @Autowired private val userController: UserController,
     @Autowired private val handlerExceptionResolver: HandlerExceptionResolver
 ) {
@@ -36,7 +35,7 @@ class UserCreateTest(
     private lateinit var tokenCache: String
 
     @BeforeEach
-    internal fun setup() {
+    fun setup() {
         val params = UserPoster(
             name = "user",
             password = "password",
@@ -69,7 +68,7 @@ class UserCreateTest(
     }
 
     @AfterEach
-    fun postProcessing(){
+    fun postProcessing() {
         val tokenPoster = UserController.TokenPoster(token = tokenCache)
         val tokenJson: String = mapper.writeValueAsString(tokenPoster)
         mockMvc.perform(
