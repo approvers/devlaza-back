@@ -152,7 +152,7 @@ class ProjectLeaveFailTest(
     }
 
     @Test
-    fun failLeaveFromProjectWithDidNotJoinToProject(){
+    fun failLeaveFromProjectWithDidNotJoinToProject() {
         val tokenJson: String = generateTokenJson(joinUserTokenCache)
         postRequestToProject("/${projectIDCache}/leave", tokenJson)
             .andExpect(status().isNoContent)

@@ -158,7 +158,7 @@ class ProjectControllerTest(
     }
 
     @Test
-    fun failCreateProjectWithWrongRequestBody(){
+    fun failCreateProjectWithWrongRequestBody() {
         val projectParam = ProjectPoster(
             name = "projectName2",
             introduction = "intro",
