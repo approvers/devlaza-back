@@ -78,27 +78,16 @@ class UserController(
         val sameMailAddressChecker: List<User> = userRepository.findByMailAddress(userPoster.mailAddress)
         if (sameMailAddressChecker.isNotEmpty()) throw BadRequest("The email address is already in use.")
 
-        val mailAuthorized: Int = if (bootEnv == "test") {
-            1
-        } else {
-            0
-        }
-
         val newUser = User(
             name = userPoster.name,
             passWord = userPoster.password,
             showId = userPoster.showId,
-            mailAddress = userPoster.mailAddress,
-            mailAuthorized = mailAuthorized
+            mailAddress = userPoster.mailAddress
         )
 
         var token: String
 
         userRepository.save(newUser)
-
-        if (bootEnv == "test") {
-            return ResponseEntity.ok(newUser)
-        }
 
         while (true) {
             token = createMailToken()

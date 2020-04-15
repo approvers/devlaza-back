@@ -34,6 +34,7 @@ class AuthController(
 
         val userId: UUID = decode(token)
 
+        // IDに重複は無いので発見されるUserの数は1~0なのでsingleOrNullで取っています
         return ResponseEntity.ok(userRepository.findById(userId).singleOrNull()
             ?: throw NotFound("No users were found for that token"))
     }

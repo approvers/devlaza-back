@@ -46,7 +46,7 @@ class ProjectControllerTest(
         val json: String = mapper.writeValueAsString(params)
 
         mockMvc.perform(
-            post("/users")
+            post("/test/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json)
         )
@@ -76,7 +76,7 @@ class ProjectControllerTest(
         val joinUserJson: String = mapper.writeValueAsString(joinUserParams)
 
         mockMvc.perform(
-            post("/users")
+            post("/test/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(joinUserJson)
         )

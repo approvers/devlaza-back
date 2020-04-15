@@ -16,21 +16,13 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delet
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import org.springframework.test.web.servlet.setup.MockMvcBuilders
-import org.springframework.web.servlet.HandlerExceptionResolver
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
 class UserControllerTest(
-    @Autowired private val userController: UserController,
-    @Autowired private val handlerExceptionResolver: HandlerExceptionResolver
+    @Autowired private val mockMvc: MockMvc
 ) {
     private val mapper = jacksonObjectMapper()
-
-    private val mockMvc: MockMvc = MockMvcBuilders
-        .standaloneSetup(userController)
-        .setHandlerExceptionResolvers(handlerExceptionResolver)
-        .build()
 
     private lateinit var tokenCache: String
 
@@ -46,7 +38,7 @@ class UserControllerTest(
         val json: String = mapper.writeValueAsString(params)
 
         mockMvc.perform(
-            post("/users")
+            post("/test/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json)
         )
@@ -90,14 +82,14 @@ class UserControllerTest(
         val json: String = mapper.writeValueAsString(params)
 
         mockMvc.perform(
-            post("/users")
+            post("/test/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json)
         ).andExpect(status().isOk)
         mockMvc.perform(get("/users")).andExpect(status().isOk)
 
         mockMvc.perform(
-            post("/users")
+            post("/test/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json)
         ).andExpect(status().isBadRequest)
