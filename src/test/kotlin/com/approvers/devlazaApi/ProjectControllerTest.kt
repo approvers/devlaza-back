@@ -1,7 +1,6 @@
 package com.approvers.devlazaApi
 
 import com.approvers.devlazaApi.controller.ProjectsController
-import com.approvers.devlazaApi.controller.UserController
 import com.approvers.devlazaApi.model.LoginPoster
 import com.approvers.devlazaApi.model.ProjectPoster
 import com.approvers.devlazaApi.model.Projects
@@ -18,6 +17,7 @@ import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.ResultActions
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.util.UUID
@@ -117,14 +117,42 @@ class ProjectControllerTest(
     }
 
     @AfterEach
-    fun deleteUser() {
-        val tokenPoster = UserController.TokenPoster(token = tokenCache)
-        val tokenJson: String = mapper.writeValueAsString(tokenPoster)
+    fun cleaningDB() {
+        val tokenJson: String = generateTokenJson(tokenCache)
+        val joinUserTokenJson: String = generateTokenJson(joinUserTokenCache)
+
+        mockMvc.perform(
+            delete("/projects/$projectIDCache")
+                .contentType(MediaType.APPLICATION_JSON)
+                .param("token", tokenCache)
+        )
+
         mockMvc.perform(
             delete("/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(tokenJson)
         )
+
+        mockMvc.perform(
+            delete("/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(joinUserTokenJson)
+        )
+    }
+
+    @Test
+    fun getOneProjectTest() {
+        mockMvc.perform(
+            get("/projects/$projectIDCache")
+        ).andExpect(status().isOk)
+    }
+
+    @Test
+    fun failGetOneProjectWithInvalidProjectID() {
+        val invalidID = UUID.randomUUID().toString()
+        mockMvc.perform(
+            get("/projects/$invalidID")
+        ).andExpect(status().isNotFound)
     }
 
     @Test
@@ -203,6 +231,60 @@ class ProjectControllerTest(
         postRequestToProject("/$projectIDCache/join", tokenJson).andExpect(status().isOk)
         postRequestToProject("/$projectIDCache/join", tokenJson).andExpect(status().isBadRequest)
         postRequestToProject("/$projectIDCache/leave", tokenJson).andExpect(status().isNoContent)
+    }
+
+    @Test
+    fun deleteProject() {
+        val projectParam = ProjectPoster(
+            name = "projectName1",
+            introduction = "intro",
+            token = tokenCache,
+            sites = "site,url",
+            tags = "tag1+tag2"
+        )
+
+        val postJson = mapper.writeValueAsString(projectParam)
+
+        val result = postRequestToProject("", postJson)
+            .andExpect(status().isOk)
+            .andReturn()
+        val project: Projects = mapper.readValue(result.response.contentAsString, Projects::class.java)
+        val projectID: String = project.id!!.toString()
+
+        mockMvc.perform(
+            delete("/projects/$projectID")
+                .contentType(MediaType.APPLICATION_JSON)
+                .param("token", tokenCache)
+        ).andExpect(status().isNoContent)
+    }
+
+    @Test
+    fun failDeleteProjectWithProjectNotFound() {
+        val invalidProjectID: String = UUID.randomUUID().toString()
+        mockMvc.perform(
+            delete("/projects/$invalidProjectID")
+                .contentType(MediaType.APPLICATION_JSON)
+                .param("token", tokenCache)
+        ).andExpect(status().isNotFound)
+    }
+
+    @Test
+    fun failDeleteProjectWithInvalidToken() {
+        val invalidToken = "EGAGVAAWG.HRAWTGAW.HWEYHAZ"
+        mockMvc.perform(
+            delete("/projects/$projectIDCache")
+                .contentType(MediaType.APPLICATION_JSON)
+                .param("token", invalidToken)
+        ).andExpect(status().isBadRequest)
+    }
+
+    @Test
+    fun failDeleteProjectWithIsNotCreatedUser() {
+        mockMvc.perform(
+            delete("/projects/$projectIDCache")
+                .contentType(MediaType.APPLICATION_JSON)
+                .param("token", joinUserTokenCache)
+        ).andExpect(status().isBadRequest)
     }
 
     private fun postRequestToProject(

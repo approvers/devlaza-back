@@ -190,7 +190,7 @@ class ProjectsController(
     fun getProjectById(@PathVariable(value = "id", required = true) rawId: String): ResponseEntity<Projects> {
         val projectId: UUID = rawId.toUUID()
 
-        val project: Projects = getProject(projectId) ?: throw BadRequest("")
+        val project: Projects = getProject(projectId) ?: throw NotFound("Project not found with given ID")
 
         return ResponseEntity.ok(project)
     }
@@ -199,7 +199,7 @@ class ProjectsController(
     fun deleteProject(@PathVariable(value = "id", required = true) rawId: String, @RequestParam(name = "token", required = true) token: String): ResponseEntity<String> {
         val projectId: UUID = rawId.toUUID()
 
-        val project: Projects = getProject(projectId) ?: throw BadRequest("Project not found")
+        val project: Projects = getProject(projectId) ?: throw NotFound("Project not found")
 
         val userIdFromToken: UUID = decode(token)
 
