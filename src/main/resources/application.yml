@@ -17,7 +17,7 @@ spring:
       mail:
         smtp:
           auth: true
-          startls:
+          starttls:
             enable: true
 
   mvc:
@@ -29,3 +29,5 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+
+boot_env: production

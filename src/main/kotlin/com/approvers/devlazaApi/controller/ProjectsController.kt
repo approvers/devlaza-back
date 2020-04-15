@@ -10,10 +10,12 @@ import com.approvers.devlazaApi.errors.NotFound
 import com.approvers.devlazaApi.model.ProjectMember
 import com.approvers.devlazaApi.model.ProjectPoster
 import com.approvers.devlazaApi.model.Projects
+import com.approvers.devlazaApi.model.Sites
 import com.approvers.devlazaApi.model.Tags
 import com.approvers.devlazaApi.model.TagsToProjectsBridge
 import com.approvers.devlazaApi.repository.ProjectMemberRepository
 import com.approvers.devlazaApi.repository.ProjectsRepository
+import com.approvers.devlazaApi.repository.SitesRepository
 import com.approvers.devlazaApi.repository.TagsRepository
 import com.approvers.devlazaApi.repository.TagsToProjectsBridgeRepository
 import com.approvers.devlazaApi.repository.UserRepository
@@ -43,7 +45,8 @@ class ProjectsController(
     private val tagsToProjectsBridgeRepository: TagsToProjectsBridgeRepository,
     private val tagsRepository: TagsRepository,
     private val projectMemberRepository: ProjectMemberRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val sitesRepository: SitesRepository
 ) {
     private val secret: String = System.getenv("secret") ?: "secret"
 
@@ -74,7 +77,7 @@ class ProjectsController(
 
         allProjects.sortBy { it.created_at }
         allProjects.reverse()
-        if (allProjects.size < getBegin) NotFound("get_begin is larger than number of projects")
+        if (allProjects.size < getBegin) throw NotFound("get_begin is larger than number of projects")
 
         if (allProjects.size < getEnd) getEnd = allProjects.size - 1
 
@@ -84,6 +87,7 @@ class ProjectsController(
     @PostMapping("")
     fun createNewProject(@Valid @RequestBody rawData: ProjectPoster): ResponseEntity<Projects> {
         val userId: UUID = decode(rawData.token)
+        if (userRepository.findById(userId).isEmpty()) throw NotFound("User not found with given token")
         val projects = Projects(
             name = rawData.name,
             introduction = rawData.introduction,
@@ -91,6 +95,13 @@ class ProjectsController(
         )
 
         projectsRepository.save(projects)
+
+        val projectCreator = ProjectMember(
+            projectId = projects.id!!,
+            userId = userId
+        )
+
+        projectMemberRepository.save(projectCreator)
 
         sitesController.saveSites(rawData.sites, projects.id!!)
 
@@ -138,8 +149,7 @@ class ProjectsController(
 
         val projectMember: ProjectMember = projectMemberRepository.getProjectMember(userId, projectId)
 
-        val projectCreatorId: UUID = projectsRepository.findById(projectId)[0].createdUserId!!
-
+        val projectCreatorId: UUID = projectsRepository.findById(projectId).single().createdUserId!!
         if (projectCreatorId == userId) throw BadRequest("Project created user can't leave from project")
 
         projectMemberRepository.delete(projectMember)
@@ -180,7 +190,7 @@ class ProjectsController(
     fun getProjectById(@PathVariable(value = "id", required = true) rawId: String): ResponseEntity<Projects> {
         val projectId: UUID = rawId.toUUID()
 
-        val project: Projects = getProject(projectId) ?: throw BadRequest("")
+        val project: Projects = getProject(projectId) ?: throw NotFound("Project not found with given ID")
 
         return ResponseEntity.ok(project)
     }
@@ -189,12 +199,27 @@ class ProjectsController(
     fun deleteProject(@PathVariable(value = "id", required = true) rawId: String, @RequestParam(name = "token", required = true) token: String): ResponseEntity<String> {
         val projectId: UUID = rawId.toUUID()
 
-        val project: Projects = getProject(projectId) ?: throw BadRequest("Project not found")
+        val project: Projects = getProject(projectId) ?: throw NotFound("Project not found")
 
         val userIdFromToken: UUID = decode(token)
 
         if (project.createdUserId == userIdFromToken) {
             projectsRepository.delete(project)
+
+            val projectMemberList: List<ProjectMember> = projectMemberRepository.findByProjectId(projectId)
+            for (projectMember in projectMemberList) {
+                projectMemberRepository.delete(projectMember)
+            }
+
+            val tagsToProjectsBridgeList: List<TagsToProjectsBridge> = tagsToProjectsBridgeRepository.findByProjectId(projectId)
+            for (tagsToProjectsBridge in tagsToProjectsBridgeList) {
+                tagsToProjectsBridgeRepository.delete(tagsToProjectsBridge)
+            }
+
+            val sitesList: List<Sites> = sitesRepository.findByProjectId(projectId)
+            for (site in sitesList) {
+                sitesRepository.delete(site)
+            }
             return ResponseEntity.noContent().build()
         }
         throw BadRequest("The user does not created the project")
@@ -210,7 +235,7 @@ class ProjectsController(
             )
         } catch (e: Exception) {
             when (e) {
-                is UnsupportedEncodingException, is JWTVerificationException
+                is UnsupportedEncodingException, is JWTVerificationException, is IllegalArgumentException
                 -> throw BadRequest("token is invalid")
                 else -> throw e
             }

@@ -2,6 +2,7 @@ package com.approvers.devlazaApi.controller
 
 import com.approvers.devlazaApi.errors.BadRequest
 import com.approvers.devlazaApi.errors.NotFound
+import com.approvers.devlazaApi.errors.UnAuthorized
 import com.approvers.devlazaApi.model.LoginPoster
 import com.approvers.devlazaApi.model.MailToken
 import com.approvers.devlazaApi.model.User
@@ -9,18 +10,24 @@ import com.approvers.devlazaApi.model.UserPoster
 import com.approvers.devlazaApi.repository.MailTokenRepository
 import com.approvers.devlazaApi.repository.UserRepository
 import com.auth0.jwt.JWT
+import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
+import com.auth0.jwt.exceptions.JWTVerificationException
+import com.auth0.jwt.interfaces.DecodedJWT
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.ResponseEntity
 import org.springframework.mail.MailException
 import org.springframework.mail.MailSender
 import org.springframework.mail.SimpleMailMessage
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import java.io.UnsupportedEncodingException
 import java.util.Date
 import java.util.UUID
 import javax.validation.Valid
@@ -30,13 +37,20 @@ import javax.validation.Valid
 class UserController(
     private val userRepository: UserRepository,
     private val mailTokenRepository: MailTokenRepository,
-    @Autowired private val sender: MailSender
+    @Autowired private val sender: MailSender,
+    @Value("\${boot_env}") private val bootEnv: String
 ) {
     private val secret: String = System.getenv("secret") ?: "secret"
     private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
+    private val algorithm: Algorithm = Algorithm.HMAC256(secret)
+    private val verifier: JWTVerifier = JWT.require(algorithm).build()
 
     @GetMapping("")
-    fun getAllUsers(): List<User> = userRepository.findAll()
+    fun getAllUsers(): ResponseEntity<List<User>> {
+        val users: List<User> = userRepository.findAll()
+        if (users.isEmpty()) return ResponseEntity.noContent().build()
+        return ResponseEntity.ok(users)
+    }
 
     @GetMapping("/{id}")
     fun getUserByShowId(@PathVariable(value = "id") id: String): ResponseEntity<User> {
@@ -107,17 +121,27 @@ class UserController(
         if (userList.isEmpty()) throw NotFound("Could not find user from email address")
 
         val user: User = userList[0]
-        val userId: UUID? = user.id
 
         if (user.mailAuthorized == 0) throw BadRequest("The email address is not authenticated")
 
-        if (user.passWord != loginPoster.password) throw BadRequest("Password invalid")
+        if (user.passWord != loginPoster.password) throw UnAuthorized("Password invalid")
 
-        if (userId is UUID) {
-            val token: String = createToken(user.name, user.id!!)
-            return ResponseEntity.ok(token)
-        }
-        throw NotFound("Could not find user id")
+        val token: String = createToken(user.name, user.id!!)
+        return ResponseEntity.ok(token)
+    }
+
+    @DeleteMapping("")
+    fun deleteUser(
+        @RequestBody tokenPoster: TokenPoster
+    ): ResponseEntity<Unit> {
+        val token: String = tokenPoster.token
+
+        val userID: UUID = decode(token)
+        val user: User = userRepository.findById(userID).singleOrNull()
+            ?: throw NotFound("user not found with given token")
+
+        userRepository.delete(user)
+        return ResponseEntity.ok().build()
     }
 
     private fun createMailToken() = (1..32)
@@ -138,4 +162,25 @@ class UserController(
             .withClaim("USER_name", userName)
             .sign(algorithm)
     }
+
+    private fun decode(token: String): UUID {
+        val userId: UUID
+        try {
+            val decodedJWT: DecodedJWT = verifier.verify(token)
+
+            userId = UUID.fromString(
+                decodedJWT.getClaim("USER_ID").asString()
+            )
+        } catch (e: Exception) {
+            when (e) {
+                is UnsupportedEncodingException, is JWTVerificationException, is IllegalArgumentException
+                -> throw BadRequest("token is invalid")
+                else -> throw e
+            }
+        }
+
+        return userId
+    }
+
+    data class TokenPoster(val token: String)
 }
