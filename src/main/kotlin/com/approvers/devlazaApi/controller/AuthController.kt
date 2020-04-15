@@ -10,6 +10,7 @@ import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.exceptions.JWTVerificationException
 import com.auth0.jwt.interfaces.DecodedJWT
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -28,13 +29,13 @@ class AuthController(
     private val verifier: JWTVerifier = JWT.require(algorithm).build()
 
     @PostMapping("")
-    fun getUserInfo(@Valid @RequestBody authPoster: AuthPoster): User {
+    fun getUserInfo(@Valid @RequestBody authPoster: AuthPoster): ResponseEntity<User> {
         val token: String = authPoster.token
 
         val userId: UUID = decode(token)
 
-        return userRepository.findById(userId).singleOrNull()
-            ?: throw NotFound("No users were found for that token")
+        return ResponseEntity.ok(userRepository.findById(userId).singleOrNull()
+            ?: throw NotFound("No users were found for that token"))
     }
 
 
