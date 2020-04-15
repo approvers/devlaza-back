@@ -149,7 +149,7 @@ class ProjectsController(
 
         val projectMember: ProjectMember = projectMemberRepository.getProjectMember(userId, projectId)
 
-        val projectCreatorId: UUID = projectsRepository.findById(projectId).single().id!!
+        val projectCreatorId: UUID = projectsRepository.findById(projectId).single().createdUserId!!
         if (projectCreatorId == userId) throw BadRequest("Project created user can't leave from project")
 
         projectMemberRepository.delete(projectMember)
