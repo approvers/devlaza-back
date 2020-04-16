@@ -5,9 +5,13 @@ import com.approvers.devlazaApi.errors.NotFound
 import com.approvers.devlazaApi.errors.UnAuthorized
 import com.approvers.devlazaApi.model.LoginPoster
 import com.approvers.devlazaApi.model.MailToken
+import com.approvers.devlazaApi.model.ProjectMember
+import com.approvers.devlazaApi.model.Projects
 import com.approvers.devlazaApi.model.User
 import com.approvers.devlazaApi.model.UserPoster
 import com.approvers.devlazaApi.repository.MailTokenRepository
+import com.approvers.devlazaApi.repository.ProjectMemberRepository
+import com.approvers.devlazaApi.repository.ProjectsRepository
 import com.approvers.devlazaApi.repository.UserRepository
 import com.auth0.jwt.JWT
 import com.auth0.jwt.JWTVerifier
@@ -37,6 +41,8 @@ import javax.validation.Valid
 class UserController(
     private val userRepository: UserRepository,
     private val mailTokenRepository: MailTokenRepository,
+    private val projectMemberRepository: ProjectMemberRepository,
+    private val projectsRepository: ProjectsRepository,
     @Autowired private val sender: MailSender,
     @Value("\${boot_env}") private val bootEnv: String
 ) {
@@ -140,8 +146,25 @@ class UserController(
         val user: User = userRepository.findById(userID).singleOrNull()
             ?: throw NotFound("user not found with given token")
 
+        deleteRelatedData(userID)
+
         userRepository.delete(user)
         return ResponseEntity.ok().build()
+    }
+
+    private fun deleteRelatedData(userID: UUID) {
+
+        val projectsMemberInThisUser: List<ProjectMember> = projectMemberRepository.findByUserId(userID)
+
+        for (projectMember in projectsMemberInThisUser) {
+            projectMemberRepository.delete(projectMember)
+        }
+
+        val deleteUserHaveProjects: List<Projects> = projectsRepository.findByCreatedUserId(userID)
+
+        for (project in deleteUserHaveProjects) {
+            projectsRepository.delete(project)
+        }
     }
 
     private fun createMailToken() = (1..32)
