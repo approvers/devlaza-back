@@ -196,12 +196,12 @@ class ProjectsController(
     }
 
     @DeleteMapping("/{id}")
-    fun deleteProject(@PathVariable(value = "id", required = true) rawId: String, @RequestParam(name = "token", required = true) token: String): ResponseEntity<String> {
+    fun deleteProject(@PathVariable(value = "id", required = true) rawId: String, @RequestBody token: TokenPoster): ResponseEntity<String> {
         val projectId: UUID = rawId.toUUID()
 
         val project: Projects = getProject(projectId) ?: throw NotFound("Project not found")
 
-        val userIdFromToken: UUID = decode(token)
+        val userIdFromToken: UUID = decode(token.token)
 
         if (project.createdUserId == userIdFromToken) {
             projectsRepository.delete(project)
