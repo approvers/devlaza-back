@@ -126,6 +126,12 @@ class ProjectLeaveFailTest(
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(tokenJson)
         )
+
+        mockMvc.perform(
+            delete("/projects/$projectIDCache")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(tokenJson)
+        )
     }
 
     @Test

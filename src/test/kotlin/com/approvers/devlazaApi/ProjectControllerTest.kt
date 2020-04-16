@@ -124,7 +124,7 @@ class ProjectControllerTest(
         mockMvc.perform(
             delete("/projects/$projectIDCache")
                 .contentType(MediaType.APPLICATION_JSON)
-                .param("token", tokenCache)
+                .content(tokenJson)
         )
 
         mockMvc.perform(
@@ -250,40 +250,44 @@ class ProjectControllerTest(
             .andReturn()
         val project: Projects = mapper.readValue(result.response.contentAsString, Projects::class.java)
         val projectID: String = project.id!!.toString()
+        val tokenJson = generateTokenJson(tokenCache)
 
         mockMvc.perform(
             delete("/projects/$projectID")
                 .contentType(MediaType.APPLICATION_JSON)
-                .param("token", tokenCache)
+                .content(tokenJson)
         ).andExpect(status().isNoContent)
     }
 
     @Test
     fun failDeleteProjectWithProjectNotFound() {
         val invalidProjectID: String = UUID.randomUUID().toString()
+        val tokenJson = generateTokenJson(tokenCache)
         mockMvc.perform(
             delete("/projects/$invalidProjectID")
                 .contentType(MediaType.APPLICATION_JSON)
-                .param("token", tokenCache)
+                .content(tokenJson)
         ).andExpect(status().isNotFound)
     }
 
     @Test
     fun failDeleteProjectWithInvalidToken() {
         val invalidToken = "EGAGVAAWG.HRAWTGAW.HWEYHAZ"
+        val tokenJson = generateTokenJson(invalidToken)
         mockMvc.perform(
             delete("/projects/$projectIDCache")
                 .contentType(MediaType.APPLICATION_JSON)
-                .param("token", invalidToken)
+                .content(tokenJson)
         ).andExpect(status().isBadRequest)
     }
 
     @Test
     fun failDeleteProjectWithIsNotCreatedUser() {
+        val tokenJson = generateTokenJson(joinUserTokenCache)
         mockMvc.perform(
             delete("/projects/$projectIDCache")
                 .contentType(MediaType.APPLICATION_JSON)
-                .param("token", joinUserTokenCache)
+                .content(tokenJson)
         ).andExpect(status().isBadRequest)
     }
 
