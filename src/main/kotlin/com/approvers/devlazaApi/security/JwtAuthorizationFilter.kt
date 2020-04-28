@@ -11,8 +11,8 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 class JwtAuthorizationFilter(
-        authenticationManager: AuthenticationManager,
-        private val userDetailsService: UserDetailsService
+    authenticationManager: AuthenticationManager,
+    private val userDetailsService: UserDetailsService
 ) : BasicAuthenticationFilter(authenticationManager) {
     override fun doFilterInternal(request: HttpServletRequest, response: HttpServletResponse, chain: FilterChain) {
         val token = request.authentication ?: run {

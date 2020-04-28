@@ -13,9 +13,9 @@ private const val SUBJECT = "token"
 
 private val ALGORITHM = Algorithm.HMAC256(SECRET)
 private val verifier = JWT.require(ALGORITHM)
-        .withIssuer(ISSUER)
-        .withSubject(SUBJECT)
-        .build()
+    .withIssuer(ISSUER)
+    .withSubject(SUBJECT)
+    .build()
 
 private object ClaimKeys {
     const val USERNAME = "username"
@@ -27,15 +27,15 @@ fun LoginUser.sign(): String? {
     return try {
         val algorithm = Algorithm.HMAC256(this.password)
         JWT.create()
-                .withSubject(this.mailAddress)
-                .withIssuer(ISSUER)
-                .withSubject(SUBJECT)
-                .withAudience(this.mailAddress)
-                .withClaim(ClaimKeys.USERNAME, this.username)
-                .withClaim(ClaimKeys.USER_ID, "${this.id}")
-                .withIssuedAt(Date())
-                .withExpiresAt(expireDate)
-                .sign(algorithm)
+            .withSubject(this.mailAddress)
+            .withIssuer(ISSUER)
+            .withSubject(SUBJECT)
+            .withAudience(this.mailAddress)
+            .withClaim(ClaimKeys.USERNAME, this.username)
+            .withClaim(ClaimKeys.USER_ID, "${this.id}")
+            .withIssuedAt(Date())
+            .withExpiresAt(expireDate)
+            .sign(algorithm)
     } catch (ex: Exception) {
         null
     }

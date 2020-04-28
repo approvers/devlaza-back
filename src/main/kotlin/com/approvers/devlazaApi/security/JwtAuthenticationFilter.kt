@@ -12,8 +12,8 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 class JwtAuthenticationFilter(
-        authenticationManager: AuthenticationManager,
-        private val mapper: ObjectMapper
+    authenticationManager: AuthenticationManager,
+    private val mapper: ObjectMapper
 ) : UsernamePasswordAuthenticationFilter() {
     init {
         this.authenticationManager = authenticationManager
@@ -37,10 +37,10 @@ class JwtAuthenticationFilter(
     }
 
     private fun handleResponse(
-            @Suppress("UNUSED_PARAMETER") request: HttpServletRequest,
-            response: HttpServletResponse,
-            result: Authentication?,
-            @Suppress("UNUSED_PARAMETER") failed: AuthenticationException?
+        @Suppress("UNUSED_PARAMETER") request: HttpServletRequest,
+        response: HttpServletResponse,
+        result: Authentication?,
+        @Suppress("UNUSED_PARAMETER") failed: AuthenticationException?
     ) {
         response.setHeader("Content-Type", "application/json;charset=UTF-8")
 

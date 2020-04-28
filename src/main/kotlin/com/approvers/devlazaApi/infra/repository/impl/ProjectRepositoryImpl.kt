@@ -17,15 +17,15 @@ class ProjectRepositoryImpl : ProjectRepository {
     @Transactional
     override fun get(id: UUID): Project? {
         return ProjectEntity.findById(id)
-                ?.toData()
+            ?.toData()
     }
 
     @Transactional
     override fun getAll(limit: Int): List<Project> {
         return ProjectEntity.all()
-                .limit(limit)
-                .sortedBy { it.createdAt }
-                .map(ProjectEntity::toData)
+            .limit(limit)
+            .sortedBy { it.createdAt }
+            .map(ProjectEntity::toData)
     }
 
     @Transactional
@@ -44,9 +44,9 @@ class ProjectRepositoryImpl : ProjectRepository {
     override fun update(project: Project): Project {
         project.id ?: throw BadRequest("Project id must not be null")
         return ProjectEntity.findById(project.id)
-                ?.apply(project)
-                ?.toData()
-                ?: throw NotFound("Project not found.")
+            ?.apply(project)
+            ?.toData()
+            ?: throw NotFound("Project not found.")
     }
 
     private fun User.toEntity(): UserEntity? {

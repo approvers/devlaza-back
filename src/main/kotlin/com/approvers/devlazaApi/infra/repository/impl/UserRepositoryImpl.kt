@@ -21,16 +21,16 @@ class UserRepositoryImpl : UserRepository {
     @Transactional
     override fun getAll(limit: Int): List<User> {
         return UserEntity.all()
-                .limit(limit)
-                .sortedBy { it.name }
-                .map(UserEntity::toData)
+            .limit(limit)
+            .sortedBy { it.name }
+            .map(UserEntity::toData)
     }
 
     @Transactional
     override fun getWithMailAddress(mailAddress: String): User? {
         return UserEntity.find { UsersTable.mailAddress eq mailAddress }
-                .singleOrNull()
-                ?.toData()
+            .singleOrNull()
+            ?.toData()
     }
 
     @Transactional
@@ -49,9 +49,9 @@ class UserRepositoryImpl : UserRepository {
     override fun update(user: User): User {
         user.id ?: throw BadRequest("User id must not be null.")
         return UserEntity.findById(user.id)
-                ?.apply(user)
-                ?.toData()
-                ?: throw NotFound("User not found")
+            ?.apply(user)
+            ?.toData()
+            ?: throw NotFound("User not found")
     }
 
     private fun UserEntity.apply(user: User): UserEntity = apply {

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class UserDetailsServiceImpl(
-        @Autowired private val userRepository: UserRepository
+    @Autowired private val userRepository: UserRepository
 ) : UserDetailsService {
     override fun loadUserByUsername(username: String): UserDetails {
         val entity = userRepository.getWithMailAddress(username) ?: throw UsernameNotFoundException("User not found")

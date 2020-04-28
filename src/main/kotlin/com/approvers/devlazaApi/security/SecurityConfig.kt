@@ -19,24 +19,24 @@ import org.springframework.security.crypto.password.PasswordEncoder
 
 @EnableWebSecurity
 class SecurityConfig(
-        @Qualifier("userDetailsServiceImpl")
-        @Autowired
-        private val userDetailsService: UserDetailsService,
-        @Autowired
-        private val cacheManager: CacheManager
+    @Qualifier("userDetailsServiceImpl")
+    @Autowired
+    private val userDetailsService: UserDetailsService,
+    @Autowired
+    private val cacheManager: CacheManager
 ) : WebSecurityConfigurerAdapter() {
     private val mapper = jacksonObjectMapper()
 
     override fun configure(http: HttpSecurity) {
         http.cors()
-                .and()
-                .csrf().disable()
-                .authorizeRequests()
-                .anyRequest().permitAll()
-                .and()
-                .addFilter(JwtAuthenticationFilter(authenticationManager(), mapper))
-                .addFilter(JwtAuthorizationFilter(authenticationManager(), cachingUserDetailsService(userDetailsService)))
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            .and()
+            .csrf().disable()
+            .authorizeRequests()
+            .anyRequest().permitAll()
+            .and()
+            .addFilter(JwtAuthenticationFilter(authenticationManager(), mapper))
+            .addFilter(JwtAuthorizationFilter(authenticationManager(), cachingUserDetailsService(userDetailsService)))
+            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
     }
 
     override fun configure(auth: AuthenticationManagerBuilder) {
@@ -54,7 +54,7 @@ class SecurityConfig(
 
     private fun cachingUserDetailsService(delegate: UserDetailsService): CachingUserDetailsService {
         val ctor = CachingUserDetailsService::class.java.getDeclaredConstructor(UserDetailsService::class.java)
-                ?: error("CachingUserDetailsService constructor is null.")
+            ?: error("CachingUserDetailsService constructor is null.")
 
         ctor.isAccessible = true
         return BeanUtils.instantiateClass(ctor, delegate)
