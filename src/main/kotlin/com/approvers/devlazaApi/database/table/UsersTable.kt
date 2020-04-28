@@ -12,11 +12,16 @@ object UsersTable: UUIDTable() {
     val password = varchar("password", 60) // BECryptoのハッシュ化文字列は60文字
     val displayId = varchar("display_id", 20)
     val mailAuthorizeState = enumeration("mail_authorize_state", AuthorizationState::class)
-    val mailAddress = varchar("mail_address", 25)
-
+    val mailAddress = varchar("mail_address", 25).index()
+    val role = enumeration("role", UserRole::class)
 }
 
 enum class AuthorizationState {
     NO_AUTHORIZED,
     VERIFIED,
+}
+
+enum class UserRole {
+    ADMIN,
+    USER
 }

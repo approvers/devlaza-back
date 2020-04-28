@@ -25,9 +25,3 @@ spring:
 
   resources:
     add-mappings: false
-
-  jpa:
-    hibernate:
-      ddl-auto: update
-
-boot_env: production

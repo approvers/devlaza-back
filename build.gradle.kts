@@ -29,6 +29,7 @@ dependencies {
     implementation(kotlin("reflect"))
 
     implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-mail")
     implementation(Exposed.starter)
     implementation(Exposed.datetime)
