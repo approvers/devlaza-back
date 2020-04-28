@@ -1,5 +1,7 @@
 package com.approvers.devlazaApi.database.table
 
+import com.approvers.devlazaApi.data.AuthorizationState
+import com.approvers.devlazaApi.data.UserRole
 import org.jetbrains.exposed.dao.id.UUIDTable
 import org.jetbrains.exposed.sql.`java-time`.date
 
@@ -16,12 +18,3 @@ object UsersTable: UUIDTable() {
     val role = enumeration("role", UserRole::class)
 }
 
-enum class AuthorizationState {
-    NO_AUTHORIZED,
-    VERIFIED,
-}
-
-enum class UserRole {
-    ADMIN,
-    USER
-}

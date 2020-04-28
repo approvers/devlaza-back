@@ -1,13 +1,11 @@
 package com.approvers.devlazaApi.data
 
 import com.approvers.devlazaApi.database.entity.UserEntity
-import com.approvers.devlazaApi.database.table.AuthorizationState
-import com.approvers.devlazaApi.database.table.UserRole
 import java.time.LocalDate
 import java.util.*
 
 data class User(
-        val id: UUID,
+        val id: UUID? = null,
         var name: String,
         var birthday: LocalDate?,
         var bio: String?,
