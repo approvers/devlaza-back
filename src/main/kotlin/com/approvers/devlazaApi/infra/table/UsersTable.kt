@@ -17,4 +17,3 @@ object UsersTable : UUIDTable() {
     val mailAddress = varchar("mail_address", 25).index()
     val role = enumeration("role", UserRole::class)
 }
-
