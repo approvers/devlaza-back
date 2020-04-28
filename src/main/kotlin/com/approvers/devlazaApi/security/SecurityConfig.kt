@@ -24,7 +24,7 @@ class SecurityConfig(
         private val userDetailsService: UserDetailsService,
         @Autowired
         private val cacheManager: CacheManager
-): WebSecurityConfigurerAdapter() {
+) : WebSecurityConfigurerAdapter() {
     private val mapper = jacksonObjectMapper()
 
     override fun configure(http: HttpSecurity) {
@@ -53,7 +53,8 @@ class SecurityConfig(
         get() = PasswordEncoderFactories.createDelegatingPasswordEncoder()
 
     private fun cachingUserDetailsService(delegate: UserDetailsService): CachingUserDetailsService {
-        val ctor = CachingUserDetailsService::class.java.getDeclaredConstructor(UserDetailsService::class.java) ?: error("CachingUserDetailsService constructor is null.")
+        val ctor = CachingUserDetailsService::class.java.getDeclaredConstructor(UserDetailsService::class.java)
+                ?: error("CachingUserDetailsService constructor is null.")
 
         ctor.isAccessible = true
         return BeanUtils.instantiateClass(ctor, delegate)

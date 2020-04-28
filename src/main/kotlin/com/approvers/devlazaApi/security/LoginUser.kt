@@ -3,8 +3,8 @@ package com.approvers.devlazaApi.security
 import com.approvers.devlazaApi.errors.BadRequest
 import org.springframework.security.core.GrantedAuthority
 import java.util.UUID
-import org.springframework.security.core.userdetails.User as SpringUser
 import com.approvers.devlazaApi.domain.data.User as DataUser
+import org.springframework.security.core.userdetails.User as SpringUser
 
 class LoginUser(
         username: String,

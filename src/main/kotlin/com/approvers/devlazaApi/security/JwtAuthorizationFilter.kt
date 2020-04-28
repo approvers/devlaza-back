@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletResponse
 class JwtAuthorizationFilter(
         authenticationManager: AuthenticationManager,
         private val userDetailsService: UserDetailsService
-): BasicAuthenticationFilter(authenticationManager) {
+) : BasicAuthenticationFilter(authenticationManager) {
     override fun doFilterInternal(request: HttpServletRequest, response: HttpServletResponse, chain: FilterChain) {
         val token = request.authentication ?: run {
             chain.doFilter(request, response)
@@ -27,7 +27,7 @@ class JwtAuthorizationFilter(
     private val HttpServletRequest.authentication: UsernamePasswordAuthenticationToken?
         get() {
             val header = this.getHeader("Authorization")
-            if(header == null || !header.startsWith("Bearer ")) {
+            if (header == null || !header.startsWith("Bearer ")) {
                 return null
             }
 
@@ -36,11 +36,11 @@ class JwtAuthorizationFilter(
 
             val userDetails = try {
                 userDetailsService.loadUserByUsername(mailAddress)
-            }catch (ex: UsernameNotFoundException) {
+            } catch (ex: UsernameNotFoundException) {
                 return null
             }
 
-            if(!token.verifyToken(mailAddress)) {
+            if (!token.verifyToken(mailAddress)) {
                 return null
             }
 

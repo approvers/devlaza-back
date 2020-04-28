@@ -2,7 +2,7 @@ package com.approvers.devlazaApi.domain.data
 
 import com.approvers.devlazaApi.infra.entity.UserEntity
 import java.time.LocalDate
-import java.util.*
+import java.util.UUID
 
 data class User(
         val id: UUID? = null,

@@ -7,7 +7,7 @@ object TagsTable : UUIDTable() {
     val name = varchar("name", 20)
 }
 
-object TagsWithProjects: Table() {
+object TagsWithProjects : Table() {
     val project = reference("project", ProjectsTable).index()
     val tag = reference("tag", TagsTable).index()
 }

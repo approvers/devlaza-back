@@ -3,11 +3,11 @@ package com.approvers.devlazaApi.infra.repository.impl
 import com.approvers.devlazaApi.domain.data.Project
 import com.approvers.devlazaApi.domain.data.User
 import com.approvers.devlazaApi.domain.data.toData
-import com.approvers.devlazaApi.infra.entity.ProjectEntity
-import com.approvers.devlazaApi.infra.entity.UserEntity
 import com.approvers.devlazaApi.domain.repository.ProjectRepository
 import com.approvers.devlazaApi.errors.BadRequest
 import com.approvers.devlazaApi.errors.NotFound
+import com.approvers.devlazaApi.infra.entity.ProjectEntity
+import com.approvers.devlazaApi.infra.entity.UserEntity
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID

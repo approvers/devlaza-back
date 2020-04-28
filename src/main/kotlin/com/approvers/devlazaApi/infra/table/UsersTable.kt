@@ -6,7 +6,7 @@ import org.jetbrains.exposed.dao.id.UUIDTable
 import org.jetbrains.exposed.sql.`java-time`.date
 
 // TODO: メール認証の部分を別テーブルに切り出せないか確認する
-object UsersTable: UUIDTable() {
+object UsersTable : UUIDTable() {
     val name = varchar("name", 20)
     val birthday = date("birthday").nullable()
     val bio = varchar("bio", 200).nullable()

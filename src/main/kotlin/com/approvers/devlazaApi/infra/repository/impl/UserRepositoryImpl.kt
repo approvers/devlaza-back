@@ -2,11 +2,11 @@ package com.approvers.devlazaApi.infra.repository.impl
 
 import com.approvers.devlazaApi.domain.data.User
 import com.approvers.devlazaApi.domain.data.toData
-import com.approvers.devlazaApi.infra.entity.UserEntity
 import com.approvers.devlazaApi.domain.repository.UserRepository
-import com.approvers.devlazaApi.infra.table.UsersTable
 import com.approvers.devlazaApi.errors.BadRequest
 import com.approvers.devlazaApi.errors.NotFound
+import com.approvers.devlazaApi.infra.entity.UserEntity
+import com.approvers.devlazaApi.infra.table.UsersTable
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID

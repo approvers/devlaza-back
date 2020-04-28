@@ -36,7 +36,7 @@ fun LoginUser.sign(): String? {
                 .withIssuedAt(Date())
                 .withExpiresAt(expireDate)
                 .sign(algorithm)
-    }catch (ex: Exception) {
+    } catch (ex: Exception) {
         null
     }
 }
@@ -45,7 +45,7 @@ fun String.verifyToken(mailAddress: String): Boolean {
     return try {
         val decoded = verifier.verify(this)
         mailAddress in decoded.audience
-    }catch (ex: Exception) {
+    } catch (ex: Exception) {
         false
     }
 }
@@ -55,7 +55,7 @@ val String.userId: UUID?
         val jwt = JWT.decode(this)
         val id = jwt.getClaim(ClaimKeys.USER_ID).asString()
         UUID.fromString(id)
-    }catch (ex: Exception) {
+    } catch (ex: Exception) {
         null
     }
 
@@ -63,7 +63,7 @@ val String.username: String?
     get() = try {
         val jwt = JWT.decode(this)
         jwt.getClaim(ClaimKeys.USERNAME).asString()
-    }catch (ex: Exception) {
+    } catch (ex: Exception) {
         null
     }
 
@@ -71,6 +71,6 @@ val String.mailAddress: String?
     get() = try {
         val jwt = JWT.decode(this)
         jwt.audience.single()
-    }catch (ex: Exception) {
+    } catch (ex: Exception) {
         null
     }

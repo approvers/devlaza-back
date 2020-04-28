@@ -44,12 +44,12 @@ class JwtAuthenticationFilter(
     ) {
         response.setHeader("Content-Type", "application/json;charset=UTF-8")
 
-        if(result != null) {
+        if (result != null) {
             val user = result.principal as LoginUser
             val token = user.sign()
             val entity = ResponseEntity.ok("Bearer $token")
             response.writer.write(mapper.writeValueAsString(entity))
-        }else{
+        } else {
             val entity = ResponseEntity.badRequest()
             response.writer.write(mapper.writeValueAsString(entity))
         }

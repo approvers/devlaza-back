@@ -7,10 +7,10 @@ import com.approvers.devlazaApi.infra.table.TagsWithProjects
 import org.jetbrains.exposed.dao.UUIDEntity
 import org.jetbrains.exposed.dao.UUIDEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
-import java.util.*
+import java.util.UUID
 
 class ProjectEntity(id: EntityID<UUID>) : UUIDEntity(id) {
-    companion object: UUIDEntityClass<ProjectEntity>(ProjectsTable)
+    companion object : UUIDEntityClass<ProjectEntity>(ProjectsTable)
 
     var name by ProjectsTable.name
     var introduction by ProjectsTable.introduction
@@ -18,7 +18,7 @@ class ProjectEntity(id: EntityID<UUID>) : UUIDEntity(id) {
     var owner by UserEntity referencedOn ProjectsTable.owner
     var recruitingState by ProjectsTable.recruitingState
 
-    val sites by SiteEntity referrersOn  SitesTable.project
+    val sites by SiteEntity referrersOn SitesTable.project
     val tags by TagEntity referrersOn TagsWithProjects.project
     val members by UserEntity referrersOn ProjectMembersTable.project
 }
