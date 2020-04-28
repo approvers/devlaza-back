@@ -1,10 +1,10 @@
-package com.approvers.devlazaApi.database.repository.impl
+package com.approvers.devlazaApi.infra.repository.impl
 
-import com.approvers.devlazaApi.data.User
-import com.approvers.devlazaApi.data.toData
-import com.approvers.devlazaApi.database.entity.UserEntity
-import com.approvers.devlazaApi.database.repository.UserRepository
-import com.approvers.devlazaApi.database.table.UsersTable
+import com.approvers.devlazaApi.domain.data.User
+import com.approvers.devlazaApi.domain.data.toData
+import com.approvers.devlazaApi.infra.entity.UserEntity
+import com.approvers.devlazaApi.domain.repository.UserRepository
+import com.approvers.devlazaApi.infra.table.UsersTable
 import com.approvers.devlazaApi.errors.BadRequest
 import com.approvers.devlazaApi.errors.NotFound
 import org.springframework.stereotype.Repository

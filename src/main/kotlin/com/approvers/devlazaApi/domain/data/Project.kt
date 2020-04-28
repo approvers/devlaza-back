@@ -1,7 +1,7 @@
-package com.approvers.devlazaApi.data
+package com.approvers.devlazaApi.domain.data
 
-import com.approvers.devlazaApi.database.entity.ProjectEntity
-import com.approvers.devlazaApi.database.table.RecruitingState
+import com.approvers.devlazaApi.infra.entity.ProjectEntity
+import com.approvers.devlazaApi.infra.table.RecruitingState
 import java.time.LocalDateTime
 import java.util.UUID
 

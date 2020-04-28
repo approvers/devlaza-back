@@ -1,6 +1,6 @@
-package com.approvers.devlazaApi.data
+package com.approvers.devlazaApi.domain.data
 
-import com.approvers.devlazaApi.database.entity.UserEntity
+import com.approvers.devlazaApi.infra.entity.UserEntity
 import java.time.LocalDate
 import java.util.*
 

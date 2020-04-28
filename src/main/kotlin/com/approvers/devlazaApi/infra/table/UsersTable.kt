@@ -1,7 +1,7 @@
-package com.approvers.devlazaApi.database.table
+package com.approvers.devlazaApi.infra.table
 
-import com.approvers.devlazaApi.data.AuthorizationState
-import com.approvers.devlazaApi.data.UserRole
+import com.approvers.devlazaApi.domain.data.AuthorizationState
+import com.approvers.devlazaApi.domain.data.UserRole
 import org.jetbrains.exposed.dao.id.UUIDTable
 import org.jetbrains.exposed.sql.`java-time`.date
 

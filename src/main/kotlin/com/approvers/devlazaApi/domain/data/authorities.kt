@@ -1,4 +1,4 @@
-package com.approvers.devlazaApi.data
+package com.approvers.devlazaApi.domain.data
 
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority

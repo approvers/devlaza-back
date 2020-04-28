@@ -1,4 +1,4 @@
-package com.approvers.devlazaApi.database.table
+package com.approvers.devlazaApi.infra.table
 
 import org.jetbrains.exposed.sql.Table
 

@@ -1,6 +1,6 @@
-package com.approvers.devlazaApi.database.repository
+package com.approvers.devlazaApi.domain.repository
 
-import com.approvers.devlazaApi.data.User
+import com.approvers.devlazaApi.domain.data.User
 import java.util.UUID
 
 interface UserRepository {

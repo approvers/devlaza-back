@@ -45,7 +45,7 @@ class JwtAuthenticationFilter(
         response.setHeader("Content-Type", "application/json;charset=UTF-8")
 
         if(result != null) {
-            val user = result.principal as User
+            val user = result.principal as LoginUser
             val token = user.sign()
             val entity = ResponseEntity.ok("Bearer $token")
             response.writer.write(mapper.writeValueAsString(entity))

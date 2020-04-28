@@ -1,6 +1,6 @@
 package com.approvers.devlazaApi.security
 
-import com.approvers.devlazaApi.database.repository.UserRepository
+import com.approvers.devlazaApi.domain.repository.UserRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
@@ -13,6 +13,6 @@ class UserDetailsServiceImpl(
 ) : UserDetailsService {
     override fun loadUserByUsername(username: String): UserDetails {
         val entity = userRepository.getWithMailAddress(username) ?: throw UsernameNotFoundException("User not found")
-        return entity.toUser()
+        return entity.toLoginUser()
     }
 }

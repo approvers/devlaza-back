@@ -1,6 +1,6 @@
-package com.approvers.devlazaApi.database.entity
+package com.approvers.devlazaApi.infra.entity
 
-import com.approvers.devlazaApi.database.table.FavoritesTable
+import com.approvers.devlazaApi.infra.table.FavoritesTable
 import org.jetbrains.exposed.dao.UUIDEntity
 import org.jetbrains.exposed.dao.UUIDEntityClass
 import org.jetbrains.exposed.dao.id.EntityID

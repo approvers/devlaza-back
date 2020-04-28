@@ -22,7 +22,7 @@ private object ClaimKeys {
     const val USER_ID = "user_id"
 }
 
-fun User.sign(): String? {
+fun LoginUser.sign(): String? {
     val expireDate = Date(System.currentTimeMillis() + EXPIRE_TIME)
     return try {
         val algorithm = Algorithm.HMAC256(this.password)

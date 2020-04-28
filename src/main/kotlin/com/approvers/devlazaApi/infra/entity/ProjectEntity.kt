@@ -1,9 +1,9 @@
-package com.approvers.devlazaApi.database.entity
+package com.approvers.devlazaApi.infra.entity
 
-import com.approvers.devlazaApi.database.table.ProjectMembersTable
-import com.approvers.devlazaApi.database.table.ProjectsTable
-import com.approvers.devlazaApi.database.table.SitesTable
-import com.approvers.devlazaApi.database.table.TagsWithProjects
+import com.approvers.devlazaApi.infra.table.ProjectMembersTable
+import com.approvers.devlazaApi.infra.table.ProjectsTable
+import com.approvers.devlazaApi.infra.table.SitesTable
+import com.approvers.devlazaApi.infra.table.TagsWithProjects
 import org.jetbrains.exposed.dao.UUIDEntity
 import org.jetbrains.exposed.dao.UUIDEntityClass
 import org.jetbrains.exposed.dao.id.EntityID

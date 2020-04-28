@@ -1,4 +1,4 @@
-package com.approvers.devlazaApi.database.table
+package com.approvers.devlazaApi.infra.table
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import org.jetbrains.exposed.dao.id.UUIDTable
