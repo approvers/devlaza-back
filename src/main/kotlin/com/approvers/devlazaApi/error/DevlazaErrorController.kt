@@ -1,4 +1,4 @@
-package com.approvers.devlazaApi.errors
+package com.approvers.devlazaApi.error
 
 import org.springframework.boot.web.servlet.error.ErrorController
 import org.springframework.web.bind.annotation.RequestMapping

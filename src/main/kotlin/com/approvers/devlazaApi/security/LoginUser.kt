@@ -1,6 +1,6 @@
 package com.approvers.devlazaApi.security
 
-import com.approvers.devlazaApi.errors.BadRequest
+import com.approvers.devlazaApi.error.BadRequest
 import org.springframework.security.core.GrantedAuthority
 import java.util.UUID
 import com.approvers.devlazaApi.domain.data.User as DataUser

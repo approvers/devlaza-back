@@ -4,8 +4,8 @@ import com.approvers.devlazaApi.domain.data.Project
 import com.approvers.devlazaApi.domain.data.User
 import com.approvers.devlazaApi.domain.data.toData
 import com.approvers.devlazaApi.domain.repository.ProjectRepository
-import com.approvers.devlazaApi.errors.BadRequest
-import com.approvers.devlazaApi.errors.NotFound
+import com.approvers.devlazaApi.error.BadRequest
+import com.approvers.devlazaApi.error.NotFound
 import com.approvers.devlazaApi.infra.entity.ProjectEntity
 import com.approvers.devlazaApi.infra.entity.UserEntity
 import org.springframework.stereotype.Repository

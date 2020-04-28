@@ -1,4 +1,4 @@
-package com.approvers.devlazaApi.errors
+package com.approvers.devlazaApi.error
 
 class Forbidden(message: String) : DevlazaException(message)
 

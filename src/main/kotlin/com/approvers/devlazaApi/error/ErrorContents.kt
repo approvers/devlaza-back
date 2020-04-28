@@ -1,4 +1,4 @@
-package com.approvers.devlazaApi.errors
+package com.approvers.devlazaApi.error
 
 import com.fasterxml.jackson.annotation.JsonProperty
 

@@ -1,4 +1,4 @@
-package com.approvers.devlazaApi.errors
+package com.approvers.devlazaApi.error
 
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
