@@ -3,11 +3,6 @@ package com.approvers.devlazaApi.domain.data
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 
-enum class AuthorizationState {
-    NO_AUTHORIZED,
-    VERIFIED,
-}
-
 enum class UserRole(
     private val level: Int,
     private val authority: GrantedAuthority
