@@ -9,11 +9,9 @@ import com.approvers.devlazaApi.infra.entity.apply
 import com.approvers.devlazaApi.infra.entity.toData
 import com.approvers.devlazaApi.infra.table.UsersTable
 import org.springframework.stereotype.Repository
-import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
 @Repository
-@Transactional
 class UserRepositoryImpl : UserRepository {
     override fun get(id: UUID): User {
         return UserEntity.findById(id)?.toData() ?: throw NotFound("User not found.")

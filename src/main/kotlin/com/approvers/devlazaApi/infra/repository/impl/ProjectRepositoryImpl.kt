@@ -9,11 +9,9 @@ import com.approvers.devlazaApi.infra.entity.ProjectEntity
 import com.approvers.devlazaApi.infra.entity.UserEntity
 import com.approvers.devlazaApi.infra.entity.toData
 import org.springframework.stereotype.Repository
-import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
 @Repository
-@Transactional
 class ProjectRepositoryImpl : ProjectRepository {
     override fun get(id: UUID): Project? {
         return ProjectEntity.findById(id)

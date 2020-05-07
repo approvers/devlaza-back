@@ -9,11 +9,9 @@ import com.approvers.devlazaApi.infra.entity.apply
 import com.approvers.devlazaApi.infra.entity.toData
 import com.approvers.devlazaApi.infra.table.NonAuthorizedUsersTable
 import org.springframework.stereotype.Repository
-import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
 @Repository
-@Transactional
 class NonAuthorizedUserRepositoryImpl : NonAuthorizedUserRepository {
     override fun get(id: UUID): User? {
         return NonAuthorizedUserEntity.findById(id)
