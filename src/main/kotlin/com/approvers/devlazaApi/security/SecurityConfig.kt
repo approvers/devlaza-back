@@ -2,7 +2,6 @@ package com.approvers.devlazaApi.security
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.springframework.beans.BeanUtils
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.cache.CacheManager
 import org.springframework.context.annotation.Bean
@@ -20,9 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder
 @EnableWebSecurity
 class SecurityConfig(
     @Qualifier("userDetailsServiceImpl")
-    @Autowired
     private val userDetailsService: UserDetailsService,
-    @Autowired
     private val cacheManager: CacheManager
 ) : WebSecurityConfigurerAdapter() {
     private val mapper = jacksonObjectMapper()
