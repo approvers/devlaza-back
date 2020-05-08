@@ -13,4 +13,6 @@ object NonAuthorizedUsersTable : UUIDTable() {
     val displayId = varchar("display_id", 20)
     val mailAddress = varchar("mail_address", 25).index()
     val role = enumeration("role", UserRole::class)
+
+    val token = uuid("token").index()
 }

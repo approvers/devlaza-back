@@ -56,6 +56,15 @@ class ErrorResponseHandler : ResponseEntityExceptionHandler() {
         return handleExceptionInternal(ex, body, headers, status, request)
     }
 
+    @ExceptionHandler(Conflict::class)
+    fun handle409(ex: Conflict, request: WebRequest): ResponseEntity<Any> {
+        val headers = HttpHeaders()
+        val body = ErrorContents("Conflict", ex.message!!, 409)
+        val status = HttpStatus.CONFLICT
+
+        return handleExceptionInternal(ex, body, headers, status, request)
+    }
+
     @ExceptionHandler(InternalServerError::class)
     fun handle500(ex: InternalServerError, request: WebRequest): ResponseEntity<Any> {
         val headers = HttpHeaders()

@@ -10,4 +10,6 @@ interface UserRepository {
     fun delete(id: UUID)
     fun create(user: User): User
     fun update(user: User): User
+
+    fun existsByMailAddress(mailAddress: String): Boolean
 }

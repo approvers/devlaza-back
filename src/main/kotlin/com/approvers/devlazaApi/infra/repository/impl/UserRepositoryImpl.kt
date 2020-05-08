@@ -47,4 +47,9 @@ class UserRepositoryImpl : UserRepository {
             ?.toData()
             ?: throw NotFound("User not found")
     }
+
+    override fun existsByMailAddress(mailAddress: String): Boolean {
+        return !UserEntity.find { UsersTable.mailAddress eq mailAddress }
+            .empty()
+    }
 }

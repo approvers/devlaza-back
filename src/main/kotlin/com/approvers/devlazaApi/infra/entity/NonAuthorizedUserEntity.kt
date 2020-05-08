@@ -1,5 +1,6 @@
 package com.approvers.devlazaApi.infra.entity
 
+import com.approvers.devlazaApi.domain.data.NonAuthorizedUser
 import com.approvers.devlazaApi.infra.table.NonAuthorizedUsersTable
 import org.jetbrains.exposed.dao.UUIDEntity
 import org.jetbrains.exposed.dao.UUIDEntityClass
@@ -20,4 +21,11 @@ class NonAuthorizedUserEntity(id: EntityID<UUID>) : UUIDEntity(id), UserLikeEnti
     override var displayId by NonAuthorizedUsersTable.displayId
     override var mailAddress by NonAuthorizedUsersTable.mailAddress
     override var role by NonAuthorizedUsersTable.role
+
+    var token by NonAuthorizedUsersTable.token
 }
+
+fun NonAuthorizedUserEntity.toData() = NonAuthorizedUser(
+    user = (this as UserLikeEntity).toData(),
+    token = this.token
+)
