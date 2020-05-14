@@ -142,5 +142,4 @@ class ProjectController(
     ): Project {
         return projectService.removeFavorite(id, token.user.id)
     }
-
 }
