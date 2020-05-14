@@ -1,6 +1,10 @@
 package com.approvers.devlazaApi.domain.repository
 
 import com.approvers.devlazaApi.domain.data.Project
+import com.approvers.devlazaApi.domain.data.ProjectSearchOption
+import com.approvers.devlazaApi.domain.data.User
+import com.approvers.devlazaApi.infra.table.RecruitingState
+import java.time.LocalDate
 import java.util.UUID
 
 interface ProjectRepository {
@@ -9,4 +13,22 @@ interface ProjectRepository {
     fun delete(id: UUID)
     fun create(project: Project): Project
     fun update(project: Project): Project
+
+    fun search(
+        sort: ProjectSearchOption.Sort,
+        user: String?,
+        tags: List<String>,
+        recruitingState: RecruitingState,
+        name: String?,
+        createdBefore: LocalDate?,
+        createdAfter: LocalDate?,
+        start: Long,
+        end: Long
+    ): List<Project>
+
+    fun addMember(project: Project, user: User): Project
+    fun deleteMember(project: Project, user: User): Project
+
+    fun addFavorite(project: Project, user: User): Project
+    fun deleteFavorite(project: Project, user: User): Project
 }

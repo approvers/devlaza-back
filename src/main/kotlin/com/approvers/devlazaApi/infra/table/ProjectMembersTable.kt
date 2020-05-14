@@ -1,8 +1,8 @@
 package com.approvers.devlazaApi.infra.table
 
-import org.jetbrains.exposed.sql.Table
+import org.jetbrains.exposed.dao.id.UUIDTable
 
-object ProjectMembersTable : Table() {
+object ProjectMembersTable : UUIDTable() {
     val project = reference("project", ProjectsTable).index()
     val user = reference("user", UsersTable).index()
 }
