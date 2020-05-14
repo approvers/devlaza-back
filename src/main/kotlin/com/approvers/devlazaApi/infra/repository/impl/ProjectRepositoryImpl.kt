@@ -18,6 +18,7 @@ import com.approvers.devlazaApi.infra.table.RecruitingState
 import com.approvers.devlazaApi.infra.table.UsersTable
 import com.approvers.devlazaApi.util.checkNotNull
 import org.jetbrains.exposed.sql.SortOrder
+import org.jetbrains.exposed.sql.`java-time`.date
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.andWhere
 import org.jetbrains.exposed.sql.count
@@ -89,8 +90,8 @@ class ProjectRepositoryImpl : ProjectRepository {
                 if (user != null) andWhere { UsersTable.name eq user }
                 andWhere { ProjectsTable.recruitingState eq recruitingState }
                 if (name != null) andWhere { ProjectsTable.name like "%$name%" }
-                if (createdBefore != null) andWhere { ProjectsTable.createdAt lessEq createdBefore }
-                if (createdAfter != null) andWhere { ProjectsTable.createdAt greaterEq createdAfter }
+                if (createdBefore != null) andWhere { ProjectsTable.createdAt.date() lessEq createdBefore }
+                if (createdAfter != null) andWhere { ProjectsTable.createdAt.date() greaterEq createdAfter }
 
                 when (sort) {
                     ProjectSearchOption.Sort.ASC -> orderBy(ProjectsTable.createdAt to SortOrder.ASC)
