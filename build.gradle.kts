@@ -8,7 +8,7 @@ plugins {
     kotlin("plugin.jpa") version "1.3.72"
 }
 
-group = "com.approvers"
+group = "dev.approvers"
 version = "0.0.1-SNAPSHOT"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
