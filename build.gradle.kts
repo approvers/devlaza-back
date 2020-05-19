@@ -42,10 +42,10 @@ dependencies {
     runtimeOnly("mysql:mysql-connector-java")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.junit.jupiter:junit-jupiter-api")
+    testImplementation(Mockito.Kotlin.dep)
+    testImplementation(kotlin("test-junit5"))
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
     testCompileOnly("org.junit.jupiter:junit-jupiter")
-    testCompileOnly("com.h2database:h2:1.4.200")
-    testCompileOnly("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 }
 
 tasks.withType<Test> {
